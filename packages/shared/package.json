@@ -1,0 +1,24 @@
+{
+  "name": "@meils/vue-shared",
+  "version": "0.0.1",
+  "description": "internal utils shared across @vue packages",
+  "files": [
+    "index.js",
+    "dist"
+  ],
+  "main": "dist/shared.cjs.js",
+  "module": "dist/shared.esm.js",
+  "types": "src/index.ts",
+  "sideEffects": false,
+  "buildOptions": {
+    "formats": [
+      "esm-bundler",
+      "global",
+      "cjs"
+    ]
+  },
+  "keywords": [
+    "vue"
+  ],
+  "license": "MIT"
+}

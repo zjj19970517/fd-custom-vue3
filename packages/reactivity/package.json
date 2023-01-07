@@ -1,0 +1,33 @@
+{
+  "name": "@meils/vue-reactivity",
+  "version": "0.0.1",
+  "description": "@meils/vue-reactivity",
+  "main": "dist/reactivity.cjs.js",
+  "module": "dist/reactivity.esm.js",
+  "types": "src/index.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "vitest"
+  },
+  "sideEffects": false,
+  "buildOptions": {
+    "name": "VueReactivity",
+    "formats": [
+      "esm-bundler",
+      "global",
+      "cjs"
+    ]
+  },
+  "keywords": [
+    "vue"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@meils/vue-shared": "workspace:*"
+  },
+  "peerDependencies": {
+    "@meils/vue-shared": "workspace:*"
+  }
+}

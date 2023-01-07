@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script src="../dist/reactivity.global.js"></script>
+    <script>
+      const { reactive, ref, effect, computed } = VueReactivity;
+      // const state = reactive({ name: 'meils', age: 12 });
+
+      // const app = document.getElementById('app');
+
+      // const update = effect(() => {
+      //   app.innerHTML = 'content: ' + state.name + state.age;
+      // });
+
+      // setTimeout(() => {
+      //   state.name = 'zjj';
+      // }, 1000);
+      const value = reactive({ foo: 1 });
+      const cValue = computed(() => value.foo);
+
+      effect(() => {
+        console.log(cValue.value);
+      });
+      value.foo = 2;
+      console.log('cValue', cValue.value);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/index.ts"],
+  "sourcesContent": ["const a = 100;\nconsole.log('1');\n\nexport {};\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;AAAA;AACA,UAAQ,IAAI,GAAG;",
+  "names": []
+}

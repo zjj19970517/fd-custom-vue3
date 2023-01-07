@@ -1,0 +1,16 @@
+{
+  "name": "@meils/vue",
+  "version": "0.0.1",
+  "description": "The progressive JavaScript framework for building modern web UI.",
+  "buildOptions": {
+    "name": "Vue",
+    "formats": [
+      "esm-bundler",
+      "global"
+    ]
+  },
+  "keywords": [
+    "vue"
+  ],
+  "license": "MIT"
+}
