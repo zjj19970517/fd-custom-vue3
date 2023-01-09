@@ -33,7 +33,6 @@ export function initProps(
 ) {
   const props: Data = {};
   const attrs: Data = {};
-
   parseProps(instance, vnodeProps || {}, props, attrs);
 
   if (isStateful) {
@@ -65,8 +64,9 @@ export function parseProps(
   props: Data,
   attrs: Data
 ) {
+  // propsOptions 是标准化后的用户传入的 props 选项
   const [options, needCaseDefaultKeys] = instance.propsOptions;
-
+  const hasValueProps: string[] = [];
   for (const key in vnodeProps) {
     const value = vnodeProps[key];
     const camelKey = camelize(key);
@@ -75,6 +75,7 @@ export function parseProps(
     }
     if (options && hasOwn(options, camelKey)) {
       // propsOptions 选项中有定义，交由 props 保存
+      hasValueProps.push(camelKey);
       props[camelKey] = value;
     } else {
       // 非事件相关的，且不在 propsOptions 中定义的，交由 attrs 保存
@@ -85,11 +86,13 @@ export function parseProps(
   if (needCaseDefaultKeys && options) {
     let opt;
     needCaseDefaultKeys.forEach(key => {
-      opt = options[key];
-      if (isFunction(opt.default)) {
-        props[key] = opt.default();
-      } else {
-        props[key] = opt.default;
+      if (!hasValueProps.includes(key)) {
+        opt = options[key];
+        if (isFunction(opt.default)) {
+          props[key] = opt.default();
+        } else {
+          props[key] = opt.default;
+        }
       }
     });
   }

@@ -13,6 +13,8 @@ import { RendererNode } from '../renderer';
 
 export type VNodeTypes = string | Component;
 
+export const Text = Symbol('Text');
+
 export interface VNode<HostNode = RendererNode> {
   __v_isVNode: true;
   [ReactiveFlags.SKIP]: true;
@@ -85,8 +87,13 @@ function normalizeChildren(vnode: VNode, children: unknown) {
     type = ShapeFlags.ARRAY_CHILDREN;
   } else {
     type = ShapeFlags.TEXT_CHILDREN;
+    console.log('1111');
   }
 
   vnode.shapeFlag |= type; // 或 vnode.shapeFlag = vnode.shapeFlag | type
   vnode.children = children;
+}
+
+export function createTextVNode(text = '', flag = 0): VNode {
+  return createVNode(Text, null, text, flag);
 }

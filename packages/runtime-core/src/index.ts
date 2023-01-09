@@ -22,6 +22,7 @@ export {
 } from '@meils/vue-reactivity';
 
 export { createRenderer } from './internal/renderer';
+export { h } from './api/h';
 
 // types export
 export type {

@@ -177,6 +177,8 @@ export function setupComponent(instance: ComponentInstance) {
       // TODO: 使用编译器，编译 template 后得到
       instance.render = type.render;
     }
+
+    console.log('【 debug: 组件初始化完毕 】', instance);
   }
 }
 

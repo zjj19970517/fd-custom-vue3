@@ -111,7 +111,7 @@ export function createRenderer<
     anchor: RendererNode | null = null,
     parentComponent: ComponentInstance | null = null
   ) => {
-    console.info('[debug]: patch doing', n1, n2, container);
+    console.info('【 debug: exec patch 】', n1, n2, container);
     if (n1 === n2) {
       return;
     }
