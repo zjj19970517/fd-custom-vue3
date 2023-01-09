@@ -36,3 +36,6 @@ export const toRawTypeString = (value: unknown): string => {
   // [object RawType] => RawType
   return toTypeString(value).slice(8, -1);
 };
+
+// on[EventName] 事件名（eg: onClick）
+export const isOnEventName = (key: string) => /^on[A-Z]/.test(key);

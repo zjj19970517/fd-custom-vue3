@@ -4,6 +4,7 @@ import { isObject as isObject3 } from "@meils/vue-shared";
 // packages/reactivity/src/handler/collectionHandler.ts
 var collectionHandler = {};
 var readonlyCollectionHandler = {};
+var shallowCollectionHandler = {};
 
 // packages/reactivity/src/handler/commonHandler.ts
 import {
@@ -18,10 +19,25 @@ import {
 import { isArray, isIntegerKey } from "@meils/vue-shared";
 
 // packages/reactivity/src/dep.ts
-function createDep(effects) {
+function createDep(effects = []) {
   const dep = new Set(effects || []);
   return dep;
 }
+
+// packages/reactivity/src/types/operation.ts
+var TrackOpTypes = /* @__PURE__ */ ((TrackOpTypes2) => {
+  TrackOpTypes2["GET"] = "get";
+  TrackOpTypes2["HAS"] = "has";
+  TrackOpTypes2["ITERATE"] = "iterate";
+  return TrackOpTypes2;
+})(TrackOpTypes || {});
+var TriggerOpTypes = /* @__PURE__ */ ((TriggerOpTypes2) => {
+  TriggerOpTypes2["SET"] = "set";
+  TriggerOpTypes2["ADD"] = "add";
+  TriggerOpTypes2["DELETE"] = "delete";
+  TriggerOpTypes2["CLEAR"] = "clear";
+  return TriggerOpTypes2;
+})(TriggerOpTypes || {});
 
 // packages/reactivity/src/effect.ts
 var shouldTrack = true;
@@ -46,7 +62,7 @@ function track(target, type, key) {
     }
     let dep = depsMap.get(key);
     if (!dep) {
-      dep = createDep();
+      dep = createDep([]);
       depsMap.set(key, dep);
     }
     trackEffects(dep);
@@ -159,12 +175,27 @@ function effect(getter, options) {
   return runner;
 }
 
+// packages/reactivity/src/types/common.ts
+var ReactiveFlags = /* @__PURE__ */ ((ReactiveFlags2) => {
+  ReactiveFlags2["SKIP"] = "__v_skip";
+  ReactiveFlags2["IS_REACTIVE"] = "__v_isReactive";
+  ReactiveFlags2["IS_READONLY"] = "__v_isReadonly";
+  ReactiveFlags2["IS_SHALLOW"] = "__v_isShallow";
+  ReactiveFlags2["RAW"] = "__v_raw";
+  return ReactiveFlags2;
+})(ReactiveFlags || {});
+
 // packages/reactivity/src/handler/commonHandler.ts
 var get = /* @__PURE__ */ createGetter();
 var set = /* @__PURE__ */ createSetter();
 var readonlyGet = /* @__PURE__ */ createGetter(
   true,
   false
+  /* shallow */
+);
+var shallowGet = /* @__PURE__ */ createGetter(
+  false,
+  true
   /* shallow */
 );
 function createGetter(isReadonly2 = false, shallow = false) {
@@ -254,6 +285,9 @@ var readonlyCommonHandler = {
   // Q: 为什么需要 get 呢？
   // A: 一些特殊属性值的访问，比如 ReactiveFlags.IS_REACTIVE 也是需要支持的。
 };
+var shallowCommonHandler = Object.assign({}, commonHandler, {
+  get: shallowGet
+});
 function isNonTrackableKeys(key) {
   return ["__proto__", "__v_isRef", "__isVue"].includes(key);
 }
@@ -286,6 +320,7 @@ var reactiveCacheMap = /* @__PURE__ */ new WeakMap();
 var readonlyCacheMap = /* @__PURE__ */ new WeakMap();
 var shallowReactiveCacheMap = /* @__PURE__ */ new WeakMap();
 var shallowReadonlyCacheMap = /* @__PURE__ */ new WeakMap();
+var shallowCacheMap = /* @__PURE__ */ new WeakMap();
 function reactive(target) {
   if (isReadonly(target)) {
     return target;
@@ -308,6 +343,15 @@ function readonly(target) {
     readonlyCommonHandler,
     readonlyCollectionHandler,
     readonlyCacheMap
+  );
+}
+function shallowReactive(target) {
+  return createReactiveObject(
+    target,
+    false,
+    shallowCommonHandler,
+    shallowCollectionHandler,
+    shallowCacheMap
   );
 }
 function isReadonly(value) {
@@ -374,7 +418,7 @@ function createRef(value, shallow = false) {
   return new RefImpl(value, shallow);
 }
 var RefImpl = class {
-  dep = createDep();
+  dep = createDep([]);
   // 收集到的依赖放置在 dep 中
   _value;
   // 私有变量，保存内部真实的值
@@ -475,7 +519,7 @@ var ComputedRefImpl = class {
     this.effect.computed = true;
     this.effect.active = true;
   }
-  dep = void 0;
+  dep = createDep([]);
   // 每一个 computed 都有自己的 dep，用来收集依赖
   _value;
   // 记录 computed 的计算值
@@ -499,6 +543,9 @@ var ComputedRefImpl = class {
 export {
   ITERATE_KEY,
   ReactiveEffect,
+  ReactiveFlags,
+  TrackOpTypes,
+  TriggerOpTypes,
   computed,
   createRef,
   effect,
@@ -509,8 +556,10 @@ export {
   markRaw,
   pauseTracking,
   reactive,
+  readonly,
   ref,
   resetTracking,
+  shallowReactive,
   shallowRef,
   toRaw,
   toRef,

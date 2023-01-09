@@ -1,4 +1,4 @@
-import { isFunction, NOOP } from '@meils/vue-shared';
+import { NOOP } from '@meils/vue-shared';
 import { createDep, Dep } from './dep';
 import { ReactiveEffect } from './effect';
 import { Ref, trackRefValue, triggerRefValue } from './ref';

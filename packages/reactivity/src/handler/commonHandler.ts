@@ -25,6 +25,10 @@ const readonlyGet = /*#__PURE__*/ createGetter(
   true /* isReadonly */,
   false /* shallow */
 );
+const shallowGet = /*#__PURE__*/ createGetter(
+  false /* isReadonly */,
+  true /* shallow */
+);
 
 /**
  * 创建 get 代理方法
@@ -201,6 +205,10 @@ export const readonlyCommonHandler = {
   // Q: 为什么需要 get 呢？
   // A: 一些特殊属性值的访问，比如 ReactiveFlags.IS_REACTIVE 也是需要支持的。
 };
+
+export const shallowCommonHandler = Object.assign({}, commonHandler, {
+  get: shallowGet
+});
 
 /**
  * 判断 key 是否在不需要 track 的黑名单

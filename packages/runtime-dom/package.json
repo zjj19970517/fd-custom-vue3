@@ -1,0 +1,27 @@
+{
+  "name": "@meils/vue-runtime-dom",
+  "version": "0.0.1",
+  "description": "",
+  "files": [
+    "index.js",
+    "dist"
+  ],
+  "main": "dist/runtime-dom.cjs.js",
+  "module": "dist/runtime-dom.esm.js",
+  "types": "src/index.ts",
+  "sideEffects": false,
+  "buildOptions": {
+    "formats": [
+      "esm-bundler",
+      "cjs"
+    ]
+  },
+  "dependencies": {
+    "@meils/vue-runtime-core": "workspace:*",
+    "@meils/vue-shared": "workspace:*"
+  },
+  "keywords": [
+    "vue"
+  ],
+  "license": "MIT"
+}

@@ -51,7 +51,7 @@ export function resetTracking() {
  * @param key
  */
 export function track(
-  target: Target,
+  target: object,
   type: TrackOpTypes,
   key: string | symbol
 ): void {

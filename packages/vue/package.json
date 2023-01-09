@@ -12,5 +12,8 @@
   "keywords": [
     "vue"
   ],
+  "dependencies": {
+    "@meils/vue-runtime-dom": "workspace:*"
+  },
   "license": "MIT"
 }

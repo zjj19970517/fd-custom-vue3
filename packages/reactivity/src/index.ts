@@ -1,5 +1,7 @@
 export {
   reactive,
+  readonly,
+  shallowReactive,
   isReadonly,
   isReactive,
   isProxy,
@@ -33,3 +35,6 @@ export {
 } from './ref';
 
 export { computed } from './computed';
+
+export { ReactiveFlags } from './types/common';
+export { TrackOpTypes, TriggerOpTypes } from './types/operation';

@@ -2,9 +2,14 @@ import { isObject } from '@meils/vue-shared';
 
 import {
   collectionHandler,
-  readonlyCollectionHandler
+  readonlyCollectionHandler,
+  shallowCollectionHandler
 } from './handler/collectionHandler';
-import { commonHandler, readonlyCommonHandler } from './handler/commonHandler';
+import {
+  commonHandler,
+  readonlyCommonHandler,
+  shallowCommonHandler
+} from './handler/commonHandler';
 import { ReactiveFlags, Target, TargetType } from './types/common';
 import { getTargetType } from './utils';
 
@@ -12,6 +17,7 @@ export const reactiveCacheMap = new WeakMap<Target, any>(); // reactive 响应�
 export const readonlyCacheMap = new WeakMap<Target, any>(); // readonly 缓存集
 export const shallowReactiveCacheMap = new WeakMap<Target, any>();
 export const shallowReadonlyCacheMap = new WeakMap<Target, any>();
+export const shallowCacheMap = new WeakMap<Target, any>();
 
 /**
  * 响应式处理
@@ -31,7 +37,7 @@ export function reactive(target: object) {
 
   return createReactiveObject(
     target, // arr、obj、map、set 这几种类型
-    false,
+    false /* isReadonly */,
     commonHandler, // arr、obj 适用于这个
     collectionHandler, // map、set 适用于这个
     reactiveCacheMap
@@ -46,10 +52,25 @@ export function reactive(target: object) {
 export function readonly(target: object) {
   return createReactiveObject(
     target,
-    true,
+    true /* isReadonly */,
     readonlyCommonHandler,
     readonlyCollectionHandler,
     readonlyCacheMap
+  );
+}
+
+/**
+ * 浅响应式对象
+ * @param target
+ * @returns
+ */
+export function shallowReactive<T extends object>(target: T) {
+  return createReactiveObject(
+    target,
+    false /* isReadonly */,
+    shallowCommonHandler,
+    shallowCollectionHandler,
+    shallowCacheMap
   );
 }
 

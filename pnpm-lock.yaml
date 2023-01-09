@@ -71,6 +71,37 @@ importers:
       rollup: 3.9.1
       rollup-plugin-sourcemaps: 0.6.3_mshytwc72cxefswoifpgijw32e
 
+  packages/reactivity:
+    specifiers:
+      '@meils/vue-shared': workspace:*
+    dependencies:
+      '@meils/vue-shared': link:../shared
+
+  packages/runtime-core:
+    specifiers:
+      '@meils/vue-reactivity': workspace:*
+      '@meils/vue-shared': workspace:*
+    dependencies:
+      '@meils/vue-reactivity': link:../reactivity
+      '@meils/vue-shared': link:../shared
+
+  packages/runtime-dom:
+    specifiers:
+      '@meils/vue-runtime-core': workspace:*
+      '@meils/vue-shared': workspace:*
+    dependencies:
+      '@meils/vue-runtime-core': link:../runtime-core
+      '@meils/vue-shared': link:../shared
+
+  packages/shared:
+    specifiers: {}
+
+  packages/vue:
+    specifiers:
+      '@meils/vue-runtime-dom': workspace:*
+    dependencies:
+      '@meils/vue-runtime-dom': link:../runtime-dom
+
 packages:
 
   /@ampproject/remapping/2.2.0:
