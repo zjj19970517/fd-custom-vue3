@@ -1,6 +1,7 @@
 import { EMPTY_OBJ, isFunction, isObject, ShapeFlags } from '@meils/vue-shared';
 import {
   pauseTracking,
+  proxyRefs,
   resetTracking,
   track,
   TrackOpTypes
@@ -26,6 +27,10 @@ export type Data = Record<string, unknown>;
 
 export type CtxProxy = any;
 
+export type InternalRenderFunction = {
+  (ctx: any): any;
+};
+
 export interface ComponentInstance {
   uid: number; // 唯一 ID
   vnode: VNode; // 组件对应的虚拟 DOM
@@ -45,6 +50,7 @@ export interface ComponentInstance {
   accessCache: Data | null; // 渲染上下文代理的属性访问缓存
   exposed: Data; // 组件暴露出的内容
   emit: any; // emit 事件
+  render: InternalRenderFunction | null;
 }
 
 export interface SetupContext {
@@ -105,7 +111,8 @@ export function createComponentInstance(
     proxy: null,
     accessCache: {},
     exposed: {},
-    emit: null
+    emit: null,
+    render: null
   };
 
   instance.ctx = { _: instance };
@@ -121,7 +128,7 @@ export function createComponentInstance(
  */
 export function setupComponent(instance: ComponentInstance) {
   const { vnode, type } = instance;
-  const { props, children } = vnode;
+  const { props } = vnode;
   const isStateful = isStatefulComponent(instance);
   initProps(instance, !!isStateful, props); // 初始化 props（本质是：初始化 instance.props、instance.attrs）
   // TODO: 初始化 slots
@@ -150,13 +157,25 @@ export function setupComponent(instance: ComponentInstance) {
 
       // 处理setup 执行
       if (isFunction(setupResult)) {
-        // TODO: 处理返回结果
+        // 如果返回函数类型，则将其定为组件的 render 函数
+        instance.render = setupResult;
       } else if (isObject(setupResult)) {
+        // 设置 setupState
+        // proxyRefs 的作用就是把 setupResult 对象做一层代理
+        // 方便用户直接访问 ref 类型的值
+        // 这就是为什么我们在 template 中不需要写 .value 的原因所在
+        instance.setupState = proxyRefs(setupResult);
       } else {
         console.log(
           'The execution result only supports object and function types'
         );
       }
+    }
+
+    if (!instance.render) {
+      // 补全 render 函数
+      // TODO: 使用编译器，编译 template 后得到
+      instance.render = type.render;
     }
   }
 }

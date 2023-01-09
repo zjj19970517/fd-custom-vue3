@@ -31,7 +31,8 @@ export {
   triggerRef,
   unRef,
   toRef,
-  toRefs
+  toRefs,
+  proxyRefs
 } from './ref';
 
 export { computed } from './computed';

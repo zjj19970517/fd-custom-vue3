@@ -491,6 +491,22 @@ function toRefs(object) {
   }
   return ret;
 }
+var shallowUnwrapHandlers = {
+  // 判断是否为 ref，自动进行 .value 解构
+  get: (target, key, receiver) => unRef(Reflect.get(target, key, receiver)),
+  set: (target, key, value, receiver) => {
+    const oldValue = target[key];
+    if (isRef(oldValue) && !isRef(value)) {
+      oldValue.value = value;
+      return true;
+    } else {
+      return Reflect.set(target, key, value, receiver);
+    }
+  }
+};
+function proxyRefs(objectWithRefs) {
+  return new Proxy(objectWithRefs, shallowUnwrapHandlers);
+}
 
 // packages/reactivity/src/computed.ts
 import { NOOP } from "@meils/vue-shared";
@@ -555,6 +571,7 @@ export {
   isRef,
   markRaw,
   pauseTracking,
+  proxyRefs,
   reactive,
   readonly,
   ref,
