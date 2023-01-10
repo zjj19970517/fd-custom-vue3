@@ -30,6 +30,7 @@ export interface VNode<HostNode = RendererNode> {
   patchFlag: number;
   appContext: AppContext | null;
   dynamicChildren: VNode[] | null;
+  dynamicProps: string[] | null;
 }
 
 /**
@@ -42,7 +43,8 @@ export const createVNode = (
   type: VNodeTypes,
   props: Record<string, unknown> | null = null,
   children: unknown = null,
-  patchFlag = 0
+  patchFlag = 0,
+  dynamicProps: string[] | null = null
 ) => {
   // 判断虚拟节点的 shapeFlag 标记
   const shapeFlag = isString(type)
@@ -52,7 +54,14 @@ export const createVNode = (
     : isFunction(type)
     ? ShapeFlags.FUNCTIONAL_COMPONENT
     : 0;
-  return createBaseVNode(type, props, children, patchFlag, shapeFlag);
+  return createBaseVNode(
+    type,
+    props,
+    children,
+    patchFlag,
+    dynamicProps,
+    shapeFlag
+  );
 };
 
 export function createBaseVNode(
@@ -60,6 +69,7 @@ export function createBaseVNode(
   props: Record<string, unknown> | null = null,
   children: unknown = null,
   patchFlag = 0,
+  dynamicProps: string[] | null = null,
   shapeFlag = 0,
   isBlockNode = false // 是否为 Block 节点
 ) {
@@ -75,7 +85,8 @@ export function createBaseVNode(
     shapeFlag,
     patchFlag,
     appContext: null, // app 上下文对象
-    dynamicChildren: null
+    dynamicChildren: null,
+    dynamicProps
   };
 
   if (shapeFlag === 0) {

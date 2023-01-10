@@ -61,6 +61,7 @@ export function createElementBlock(
     props,
     children,
     patchFlag,
+    dynamicProps,
     shapeFlag,
     true /* isBlockNode */
   );
@@ -83,9 +84,17 @@ export function createElementVNode(
   props: Record<string, unknown> | null = null,
   children: unknown = null,
   patchFlag = 0,
+  dynamicProps?: string[],
   shapeFlag = 0
 ) {
-  return createBaseVNode(type, props, children, patchFlag, shapeFlag);
+  return createBaseVNode(
+    type,
+    props,
+    children,
+    patchFlag,
+    dynamicProps,
+    shapeFlag
+  );
 }
 
 /**
