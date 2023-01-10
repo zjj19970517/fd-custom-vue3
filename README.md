@@ -46,3 +46,10 @@ pnpm run dev vue -f global
 - [x] 实现 h API
 - [x] 处理 App 根组件渲染流程（引入Vue原本的编译器，编译template，测试vnode）
 - [x] 完善 processElement，走通 mount 流程
+- [ ] 走通 update 流程
+- doing...
+
+## Notes
+
+* 该项目是学习型项目，重点在于 Vue 内部逻辑的实现，TS 类型声明完善不是重点。
+* 该项目本质是 Vue3 源码的简化版本，为了方便以后学习和回顾 Vue3 源码逻辑，因此在变量命名和具体实现上尽可能靠近 Vue3 源码本身。
