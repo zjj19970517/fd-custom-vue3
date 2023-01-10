@@ -51,7 +51,6 @@ export const createVNode = (
     : isFunction(type)
     ? ShapeFlags.FUNCTIONAL_COMPONENT
     : 0;
-
   return createBaseVNode(type, props, children, patchFlag, shapeFlag);
 };
 
@@ -77,6 +76,18 @@ export function createBaseVNode(
     dynamicChildren: null
   };
 
+  if (shapeFlag === 0) {
+    // 判断虚拟节点的 shapeFlag 标记
+    const shapeFlag = isString(type)
+      ? ShapeFlags.ELEMENT
+      : isObject(type)
+      ? ShapeFlags.STATEFUL_COMPONENT
+      : isFunction(type)
+      ? ShapeFlags.FUNCTIONAL_COMPONENT
+      : 0;
+    vnode.shapeFlag = shapeFlag;
+  }
+
   // 规范化 children
   normalizeChildren(vnode, children);
 
@@ -101,4 +112,12 @@ function normalizeChildren(vnode: VNode, children: unknown) {
 
   vnode.shapeFlag |= type; // 或 vnode.shapeFlag = vnode.shapeFlag | type
   vnode.children = children;
+}
+
+export function normalizeVNode(child: any): VNode {
+  if (isString(child)) {
+    return createVNode(Text, null, String(child));
+  }
+  return child as VNode;
+  // 其他标准化处理，比如数组使用 Fragment 包裹 等
 }

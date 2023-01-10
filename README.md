@@ -44,5 +44,5 @@ pnpm run dev vue -f global
   - [x] 执行 setup 函数
   - [x] 处理 setup 执行结果
 - [x] 实现 h API
-- [x] 处理 App 根组件渲染
-- [x] app 根组件 mount 时的 patch  
+- [x] 处理 App 根组件渲染流程（引入Vue原本的编译器，编译template，测试vnode）
+- [x] 完善 processElement，走通 mount 流程

@@ -6,14 +6,16 @@ import {
   createComponentInstance,
   setupComponent
 } from './component/component';
+import { isReservedProp } from './component/componentProps';
 import { renderComponent } from './component/componentRender';
-import { VNode } from './vnode';
+import { normalizeVNode, VNode } from './vnode';
 
 export interface RendererNode {
   [key: string]: any;
 }
 
-export type RendererElement = RendererNode;
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface RendererElement extends RendererNode {}
 
 export interface RendererOptions<
   HostNode = RendererNode,
@@ -134,6 +136,64 @@ export function createRenderer<
     }
   };
 
+  const mountChildren = (
+    children: any[],
+    container: RendererElement,
+    anchor: RendererNode | null,
+    parentComponent: ComponentInstance | null
+  ) => {
+    debugger;
+    for (let i = 0; i < children.length; i++) {
+      const child = normalizeVNode(children[i]);
+      patch(null, child, container, anchor, parentComponent);
+    }
+  };
+
+  const mountElement = (
+    vnode: VNode,
+    container: RendererElement,
+    anchor: RendererNode | null = null,
+    parentComponent: ComponentInstance | null = null
+  ) => {
+    const { shapeFlag, props, type } = vnode;
+    // 创建 element
+    const el: any = (vnode.el = hostCreateElement(type) as any);
+    if (props) {
+      // 处理 props，比如 class、style、event 等属性
+      for (const key in props) {
+        if (!isReservedProp(key)) {
+          hostPatchProp(el, key, null, props[key]);
+        }
+      }
+    }
+    if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      // 处理子节点是纯文本的情况
+      hostSetElementText(el, vnode.children as string);
+    } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      // 处理子节点是数组的情况
+      mountChildren(vnode.children, el, null, parentComponent);
+    }
+    // 把创建的 DOM 元素节点挂载到 container 上
+    hostInsert(el, container as any, anchor as any);
+  };
+
+  // 处理元素类型
+  const processElement = (
+    n1: VNode | null,
+    n2: VNode,
+    container: RendererElement,
+    anchor: RendererNode | null = null,
+    parentComponent: ComponentInstance | null = null
+  ) => {
+    if (n1 == null) {
+      // 挂载组件
+      mountElement(n2, container, anchor, parentComponent);
+    } else {
+      // 更新组件
+      // updateComponent(n1, n2);
+    }
+  };
+
   const patch = (
     n1: VNode | null,
     n2: VNode,
@@ -147,12 +207,13 @@ export function createRenderer<
     }
     const { type, shapeFlag } = n2;
     switch (type) {
-      case 1:
-        console.log('TODO');
+      case Text:
+        console.log('处理 Text ');
         break;
       default:
         if (shapeFlag & ShapeFlags.ELEMENT) {
           // 元素节点
+          processElement(n1, n2, container, anchor, parentComponent);
         } else if (shapeFlag & ShapeFlags.COMPONENT) {
           // 组件节点
           processComponent(n1, n2, container, anchor, parentComponent);
