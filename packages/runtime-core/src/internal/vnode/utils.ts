@@ -56,7 +56,14 @@ export function createElementBlock(
   dynamicProps?: string[],
   shapeFlag?: number
 ) {
-  const vnode = createBaseVNode(type, props, children, patchFlag, shapeFlag);
+  const vnode = createBaseVNode(
+    type,
+    props,
+    children,
+    patchFlag,
+    shapeFlag,
+    true /* isBlockNode */
+  );
   vnode.dynamicChildren = currentBlock;
   closeBlock();
   currentBlock && currentBlock.push(vnode);
@@ -118,3 +125,17 @@ const replacer = (_key: string, val: any): any => {
   }
   return val;
 };
+
+export function renderList(
+  source: Array<any>,
+  renderItem: (...args: any[]) => any
+): any[] {
+  let children = [];
+  if (isArray(source)) {
+    children = new Array(source.length);
+    for (let i = 0, l = source.length; i < l; i++) {
+      children[i] = renderItem(source[i], i);
+    }
+  }
+  return children;
+}

@@ -8,7 +8,7 @@ import {
 } from './component/component';
 import { isReservedProp } from './component/componentProps';
 import { renderComponent } from './component/componentRender';
-import { normalizeVNode, VNode } from './vnode';
+import { Fragment, normalizeVNode, VNode } from './vnode';
 
 export interface RendererNode {
   [key: string]: any;
@@ -142,7 +142,6 @@ export function createRenderer<
     anchor: RendererNode | null,
     parentComponent: ComponentInstance | null
   ) => {
-    debugger;
     for (let i = 0; i < children.length; i++) {
       const child = normalizeVNode(children[i]);
       patch(null, child, container, anchor, parentComponent);
@@ -210,6 +209,22 @@ export function createRenderer<
     }
   };
 
+  const processFragment = (
+    n1: VNode | null,
+    n2: VNode,
+    container: RendererElement,
+    anchor: RendererNode | null = null,
+    parentComponent: ComponentInstance | null = null
+  ) => {
+    if (n1 == null) {
+      // 挂载组件
+      mountChildren(n2.children, container, null, parentComponent);
+    } else {
+      // 更新组件
+      // updateComponent(n1, n2);
+    }
+  };
+
   const patch = (
     n1: VNode | null,
     n2: VNode,
@@ -217,7 +232,7 @@ export function createRenderer<
     anchor: RendererNode | null = null,
     parentComponent: ComponentInstance | null = null
   ) => {
-    console.info('【 debug: exec patch 】', n1, n2, container);
+    // console.info('【 debug: exec patch 】', n1, n2, container);
     if (n1 === n2) {
       return;
     }
@@ -226,6 +241,10 @@ export function createRenderer<
       case Text:
         // 文本节点
         processText(n1, n2, container, anchor);
+        break;
+      case Fragment:
+        // 处理 Fragment
+        processFragment(n1, n2, container, anchor, parentComponent);
         break;
       default:
         if (shapeFlag & ShapeFlags.ELEMENT) {

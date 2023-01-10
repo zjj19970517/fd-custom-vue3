@@ -10,11 +10,12 @@ import {
 import { AppContext } from '../../api/createApp';
 import { Component } from '../component/component';
 import { RendererNode } from '../renderer';
-import { currentBlock } from './utils';
+import { blockStack, currentBlock } from './utils';
 
 export type VNodeTypes = string | Component;
 
 export const Text = Symbol('Text');
+export const Fragment = Symbol('Fragment');
 
 export interface VNode<HostNode = RendererNode> {
   __v_isVNode: true;
@@ -59,7 +60,8 @@ export function createBaseVNode(
   props: Record<string, unknown> | null = null,
   children: unknown = null,
   patchFlag = 0,
-  shapeFlag = 0
+  shapeFlag = 0,
+  isBlockNode = false // 是否为 Block 节点
 ) {
   const vnode: VNode = {
     __v_isVNode: true, // 标志是一个虚拟节点
@@ -91,7 +93,7 @@ export function createBaseVNode(
   // 规范化 children
   normalizeChildren(vnode, children);
 
-  if (currentBlock && vnode.patchFlag > 0) {
+  if (currentBlock && vnode.patchFlag > 0 && !isBlockNode) {
     // 收集 dynamicChildren
     currentBlock.push(vnode);
   }
@@ -107,7 +109,6 @@ function normalizeChildren(vnode: VNode, children: unknown) {
     type = ShapeFlags.ARRAY_CHILDREN;
   } else {
     type = ShapeFlags.TEXT_CHILDREN;
-    console.log('1111');
   }
 
   vnode.shapeFlag |= type; // 或 vnode.shapeFlag = vnode.shapeFlag | type

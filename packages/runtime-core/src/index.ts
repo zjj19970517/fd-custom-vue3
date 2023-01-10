@@ -31,10 +31,11 @@ export {
   createElementBlock,
   createTextVNode,
   createElementVNode,
-  toDisplayString
+  toDisplayString,
+  renderList
 } from './internal/vnode/utils';
 
-export { createVNode, createBaseVNode } from './internal/vnode';
+export { createVNode, createBaseVNode, Text, Fragment } from './internal/vnode';
 
 // types export
 export type {
