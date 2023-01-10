@@ -10,6 +10,7 @@ import {
 import { AppContext } from '../../api/createApp';
 import { Component } from '../component/component';
 import { RendererNode } from '../renderer';
+import { currentBlock } from './utils';
 
 export type VNodeTypes = string | Component;
 
@@ -27,6 +28,7 @@ export interface VNode<HostNode = RendererNode> {
   shapeFlag: number;
   patchFlag: number;
   appContext: AppContext | null;
+  dynamicChildren: VNode[] | null;
 }
 
 /**
@@ -53,14 +55,14 @@ export const createVNode = (
   return createBaseVNode(type, props, children, patchFlag, shapeFlag);
 };
 
-function createBaseVNode(
+export function createBaseVNode(
   type: VNodeTypes,
   props: Record<string, unknown> | null = null,
   children: unknown = null,
   patchFlag = 0,
   shapeFlag = 0
 ) {
-  const vnode = {
+  const vnode: VNode = {
     __v_isVNode: true, // 标志是一个虚拟节点
     __v_skip: true, // 跳过响应式代理
     el: null, // 和真实 DOM 对应起来
@@ -68,14 +70,21 @@ function createBaseVNode(
     props,
     children,
     component: null, // 虚拟节点
-    key: props && props.key,
+    key: props && (props.key as string),
     shapeFlag,
     patchFlag,
-    appContext: null // app 上下文对象
-  } as VNode;
+    appContext: null, // app 上下文对象
+    dynamicChildren: null
+  };
 
   // 规范化 children
   normalizeChildren(vnode, children);
+
+  if (currentBlock && vnode.patchFlag > 0) {
+    // 收集 dynamicChildren
+    currentBlock.push(vnode);
+  }
+
   return vnode;
 }
 
@@ -92,8 +101,4 @@ function normalizeChildren(vnode: VNode, children: unknown) {
 
   vnode.shapeFlag |= type; // 或 vnode.shapeFlag = vnode.shapeFlag | type
   vnode.children = children;
-}
-
-export function createTextVNode(text = '', flag = 0): VNode {
-  return createVNode(Text, null, text, flag);
 }

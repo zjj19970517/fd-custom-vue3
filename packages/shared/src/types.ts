@@ -24,6 +24,14 @@ export const isIntegerKey = (key: unknown) =>
 export const isFunction = (val: unknown): val is Function =>
   typeof val === 'function';
 
+export const isMap = (val: unknown): val is Map<any, any> =>
+  toTypeString(val) === '[object Map]';
+export const isSet = (val: unknown): val is Set<any> =>
+  toTypeString(val) === '[object Set]';
+
+export const isPlainObject = (val: unknown): val is object =>
+  toTypeString(val) === '[object Object]';
+
 /**
  * 类型处理工具
  */

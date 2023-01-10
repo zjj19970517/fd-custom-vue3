@@ -1,11 +1,9 @@
 export {
-  // core
   reactive,
   ref,
   computed,
   shallowReactive,
   readonly,
-  // utilities
   unRef,
   isRef,
   toRef,
@@ -13,16 +11,30 @@ export {
   isProxy,
   isReactive,
   isReadonly,
-  // advanced
   markRaw,
   toRaw,
-  // effect
   effect,
   ReactiveEffect
 } from '@meils/vue-reactivity';
 
+// api
 export { createRenderer } from './internal/renderer';
 export { h } from './api/h';
+
+// compiler
+export { registerRuntimeCompiler } from './internal/component/component';
+
+// vnode
+export {
+  openBlock,
+  closeBlock,
+  createElementBlock,
+  createTextVNode,
+  createElementVNode,
+  toDisplayString
+} from './internal/vnode/utils';
+
+export { createVNode, createBaseVNode } from './internal/vnode';
 
 // types export
 export type {

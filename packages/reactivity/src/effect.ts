@@ -1,6 +1,5 @@
 import { isArray, isIntegerKey } from '@meils/vue-shared';
 import { createDep, Dep } from './dep';
-import { Target } from './types/common';
 import { TrackOpTypes, TriggerOpTypes } from './types/operation';
 
 export let shouldTrack = true; // 是否应该追踪依赖，默认是开启的
@@ -215,6 +214,7 @@ export class ReactiveEffect<T = any> {
 
       return this.fn();
     } catch (e) {
+      console.error('Failed to ReactiveEffect.run', e);
       // 使用上面的缓存 恢复状态
       activeEffect = this.parent;
       shouldTrack = lastShouldTrack;

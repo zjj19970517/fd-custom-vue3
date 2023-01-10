@@ -2,6 +2,7 @@ import { EMPTY_OBJ, isFunction, isObject, ShapeFlags } from '@meils/vue-shared';
 import {
   pauseTracking,
   proxyRefs,
+  ReactiveEffect,
   resetTracking,
   track,
   TrackOpTypes
@@ -51,6 +52,15 @@ export interface ComponentInstance {
   exposed: Data; // 组件暴露出的内容
   emit: any; // emit 事件
   render: InternalRenderFunction | null;
+  effect: ReactiveEffect | null;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  update: Function | null;
+
+  // lifecycle
+  isMounted: boolean;
+  isUnmounted: boolean;
+  isDeactivated: boolean;
+  subTree: VNode | null;
 }
 
 export interface SetupContext {
@@ -112,7 +122,13 @@ export function createComponentInstance(
     accessCache: {},
     exposed: {},
     emit: null,
-    render: null
+    render: null,
+    effect: null,
+    update: null,
+    isMounted: false,
+    isUnmounted: false,
+    isDeactivated: false,
+    subTree: null
   };
 
   instance.ctx = { _: instance };
@@ -172,9 +188,17 @@ export function setupComponent(instance: ComponentInstance) {
       }
     }
 
+    // 补全 render 函数
     if (!instance.render) {
-      // 补全 render 函数
-      // TODO: 使用编译器，编译 template 后得到
+      // 当组件没有 render 函数
+      // 那么就需要把 template 编译成 render 函数
+      if (compile && !type.render) {
+        if (type.template) {
+          const template = type.template;
+          type.render = compile(template);
+        }
+      }
+
       instance.render = type.render;
     }
 
@@ -218,6 +242,11 @@ export function createSetupContext(instance: ComponentInstance): SetupContext {
   };
 }
 
+/**
+ * 创建 attrs 属性的代理，使其成为响应式
+ * @param instance
+ * @returns
+ */
 function createAttrsProxy(instance: ComponentInstance): Data {
   return new Proxy(instance.attrs, {
     get(target, key: string) {
@@ -233,4 +262,19 @@ function createAttrsProxy(instance: ComponentInstance): Data {
       return false;
     }
   });
+}
+
+type CompileFunction = (
+  template: string | object,
+  options?: any
+) => InternalRenderFunction;
+
+let compile: CompileFunction | undefined;
+
+/**
+ * 注册运行时编译器的函数
+ * @param _compile 自定义的编译器
+ */
+export function registerRuntimeCompiler(_compile: any) {
+  compile = _compile;
 }

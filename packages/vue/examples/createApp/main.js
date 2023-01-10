@@ -1,4 +1,4 @@
-import { createApp, reactive, h } from '../../dist/runtime-dom.esm.js';
+import { createApp, reactive, h } from '../../dist/vue.esm.js';
 
 const app = createApp(
   {
@@ -35,13 +35,8 @@ const app = createApp(
       };
     },
     template: `
-      <div><p>静态节点</p><span>{{state.count}}</span></div>
+      <div><p>静态节点</p><span>{{this.state.count}}</span></div>
     `
-    // render() {
-    //   return h('div', {}, [
-    //     h('span', { class: 'inner', onClick: this.onClick }, this.state.count)
-    //   ]);
-    // }
   },
   { name: 'ZJJ', age: 26 }
 );

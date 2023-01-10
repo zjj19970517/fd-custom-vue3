@@ -1,3 +1,4 @@
+import { ReactiveEffect } from '@meils/vue-reactivity';
 import { ShapeFlags } from '@meils/vue-shared';
 import { createAppAPI, CreateAppFunction } from '../api/createApp';
 import {
@@ -5,6 +6,7 @@ import {
   createComponentInstance,
   setupComponent
 } from './component/component';
+import { renderComponent } from './component/componentRender';
 import { VNode } from './vnode';
 
 export interface RendererNode {
@@ -71,6 +73,34 @@ export function createRenderer<
     insertStaticContent: hostInsertStaticContent
   } = options;
 
+  const setupRenderEffect = (
+    instance: ComponentInstance,
+    initialVNode: VNode,
+    container: RendererElement,
+    anchor: RendererNode | null = null
+  ) => {
+    const renderFn = () => {
+      if (!instance.isMounted) {
+        // 挂载组件
+        // 渲染组件生成子树 vnode
+        const subTree = (instance.subTree = renderComponent(instance));
+        console.log(' 【 debug： render subTree 】 ', subTree);
+        // 把子树 vnode 挂载到 container 中
+        patch(null, subTree, container, null, instance);
+        instance.isMounted = true;
+      } else {
+        // TODO: 更新组件
+      }
+    };
+    instance.effect = new ReactiveEffect<any>(renderFn, () => {
+      // 响应式状态更新
+      // TODO: 需要异步执行
+      update();
+    });
+    const update = (instance.update = () => instance.effect?.run());
+    instance.update();
+  };
+
   const mountComponent = (
     initialVNode: VNode,
     container: RendererElement,
@@ -83,8 +113,8 @@ export function createRenderer<
     // 第二步：组件初始化
     setupComponent(instance);
 
-    // 第三步：
-    // setupRenderEffect(instance, initialVNode, container, anchor);
+    // 第三步：设置并运行带副作用的渲染函数
+    setupRenderEffect(instance, initialVNode, container, anchor);
   };
 
   // 处理组件类型节点

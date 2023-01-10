@@ -43,3 +43,5 @@ pnpm run dev vue -f global
   - [x] 初始化 props、渲染上下文代理
   - [x] 执行 setup 函数
   - [x] 处理 setup 执行结果
+- [x] 实现 h API
+- [x] 实现 h API

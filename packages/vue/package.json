@@ -13,7 +13,8 @@
     "vue"
   ],
   "dependencies": {
-    "@meils/vue-runtime-dom": "workspace:*"
+    "@meils/vue-runtime-dom": "workspace:*",
+    "@vue/compiler-core": "3.x"
   },
   "license": "MIT"
 }
