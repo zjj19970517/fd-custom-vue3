@@ -194,6 +194,22 @@ export function createRenderer<
     }
   };
 
+  const processText = (
+    n1: VNode | null,
+    n2: VNode,
+    container: RendererElement,
+    anchor: RendererNode | null = null
+  ) => {
+    if (n1 == null) {
+      n2.el = hostCreateText(n2.children as string) as any;
+      n2.el && hostInsert(n2.el as any, container as any, anchor as any);
+    } else {
+      if (n2.children !== n1.children) {
+        hostSetText(n2.el as any, n2.children as string);
+      }
+    }
+  };
+
   const patch = (
     n1: VNode | null,
     n2: VNode,
@@ -208,7 +224,8 @@ export function createRenderer<
     const { type, shapeFlag } = n2;
     switch (type) {
       case Text:
-        console.log('处理 Text ');
+        // 文本节点
+        processText(n1, n2, container, anchor);
         break;
       default:
         if (shapeFlag & ShapeFlags.ELEMENT) {

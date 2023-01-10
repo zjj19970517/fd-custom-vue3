@@ -5,6 +5,9 @@ var isSymbol = (val) => typeof val === "symbol";
 var isArray = Array.isArray;
 var isIntegerKey = (key) => isString(key) && key !== "NaN" && key[0] !== "-" && "" + parseInt(key, 10) === key;
 var isFunction = (val) => typeof val === "function";
+var isMap = (val) => toTypeString(val) === "[object Map]";
+var isSet = (val) => toTypeString(val) === "[object Set]";
+var isPlainObject = (val) => toTypeString(val) === "[object Object]";
 var toTypeString = (value) => Object.prototype.toString.call(value);
 var toRawTypeString = (value) => {
   return toTypeString(value).slice(8, -1);
@@ -62,8 +65,11 @@ export {
   isArray,
   isFunction,
   isIntegerKey,
+  isMap,
   isObject,
   isOnEventName,
+  isPlainObject,
+  isSet,
   isString,
   isSymbol,
   toRawTypeString,

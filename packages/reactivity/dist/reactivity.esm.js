@@ -156,6 +156,7 @@ var ReactiveEffect = class {
       shouldTrack = true;
       return this.fn();
     } catch (e) {
+      console.error("Failed to ReactiveEffect.run", e);
       activeEffect = this.parent;
       shouldTrack = lastShouldTrack;
       this.parent = void 0;
