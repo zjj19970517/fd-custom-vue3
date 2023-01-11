@@ -16,7 +16,7 @@ const app = createApp(
     emits: ['change'],
     setup(props, ctx) {
       const state = reactive({
-        count: 1,
+        count: 100,
         mag: 'test',
         name: props.name
       });
@@ -29,13 +29,22 @@ const app = createApp(
         state
       });
 
+      setTimeout(() => {
+        state.count = 101;
+      }, 2000);
+
       return {
         state,
         onClick
       };
     },
     template: `
-      <div><p>静态节点</p><span>{{this.state.count}}</span></div>
+      <div>
+        <p>静态节点</p>
+        <p>Count: {{ this.state.count }}</p>
+        <button @click="this.onClick">更新 Count</button>
+        <span v-for="item in [1, 2, 3, 4, 5]" key="item">{{ item }}</span>
+      </div>
     `
   },
   { name: 'ZJJ', age: 26 }

@@ -307,9 +307,12 @@ export function createRenderer<
     // d c (a b)
     // i = 0, e1 = -1, e2 = 1
     if (i > e1 && i <= e2) {
+      const nextPos = e2 + 1;
+      // 这里也要计算锚点，从而新增节点时可以准确插入
+      const anchor = nextPos < c2.length ? c2[nextPos].el : parentAnchor;
       while (i <= e2) {
         // 新增节点
-        patch(null, c2[i], container, parentAnchor, parentComponent);
+        patch(null, c2[i], container, anchor, parentComponent);
         i++;
       }
     }
@@ -463,6 +466,13 @@ export function createRenderer<
       // 新的节点为数组类型
       if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
         // 数组 -> 数组
+        patchKeyedChildren(
+          n1.children as VNode[],
+          n2.children as any[],
+          container,
+          anchor,
+          parentComponent
+        );
       } else if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
         // 文本 -> 数组
       } else {
@@ -557,7 +567,6 @@ export function createRenderer<
       hostInsert(fragmentStartAnchor, container as any, anchor as any);
       mountChildren(n2.children, container, null, parentComponent);
     } else {
-      debugger;
       // 更新 Fragment
       if (
         n2.patchFlag > 0 &&
