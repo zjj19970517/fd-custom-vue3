@@ -47,8 +47,9 @@ pnpm run dev vue -f global
 - [x] 处理 App 根组件渲染流程（引入Vue原本的编译器，编译template，测试vnode）
 - [x] 完善 processElement，走通 mount 流程
 - [x] 完善 processFragment 
-- [ ] 调试并确保依赖收集的正确性
-- [ ] 完善 patch 的 update 逻辑
+- [x] 调试并确保依赖收集的正确性
+- [x] 完善 update 流程之 updateElement、updateFragment
+- [x] 完善 update 流程之 patchKeyedChildren
 - doing...
 
 ## Notes

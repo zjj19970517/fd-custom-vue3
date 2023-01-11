@@ -8,6 +8,7 @@ import {
 } from './component/component';
 import { isReservedProp } from './component/componentProps';
 import { renderComponent } from './component/componentRender';
+import { getSequence } from './getSequence';
 import { Fragment, normalizeVNode, VNode } from './vnode';
 
 export interface RendererNode {
@@ -249,6 +250,10 @@ export function createRenderer<
     }
   };
 
+  const isSameVNodeType = (n1: VNode, n2: VNode) => {
+    return n1.type === n2.type && n1.key === n2.key;
+  };
+
   const patchKeyedChildren = (
     c1: VNode[],
     c2: any[],
@@ -257,6 +262,175 @@ export function createRenderer<
     parentComponent: ComponentInstance | null
   ) => {
     // diff 的核心
+    let i = 0;
+    let e1 = c1.length - 1; // prev ending index
+    let e2 = c2.length - 1; // next ending index
+    // 第一步：左侧开始挨个遍历，处理相同节点
+    // (a b) c
+    // (a b) d e
+    while (i <= e1 && i <= e2) {
+      const prevChild = c1[i]; // prev value
+      const nextChild = c2[i]; // next value
+      if (isSameVNodeType(prevChild, nextChild)) {
+        // 如果节点是相似节点，进行 patch 操作
+        patch(prevChild, nextChild, container, parentAnchor, parentComponent);
+      } else {
+        break;
+      }
+      i++;
+    }
+
+    // 第二步：从右侧开始挨个遍历，处理相同节点
+    // a (b c)
+    // d e (b c)
+    while (i <= e1 && i <= e2) {
+      const prevChild = c1[e1];
+      const nextChild = c2[e2];
+      if (isSameVNodeType(prevChild, nextChild)) {
+        // 如果节点是相似节点，进行 patch 操作
+        patch(prevChild, nextChild, container, parentAnchor, parentComponent);
+      } else {
+        break;
+      }
+      e1--;
+      e2--;
+    }
+
+    // 为什么要从左侧和右侧开始处理相同节点呢？
+    // 答：这种先从双端处理的做法，实际是想减少一次遍历的 O(n) 的 n 的大小。在前端场景中，很少有乱序的情况，一般都是插入和删除元素。因此这种做法会起到非常大的优化。
+
+    // 第三步：对比完相同节点后，发现多了一些节点的情况
+    // (a b)
+    // (a b) c
+    // i = 2, e1 = 1, e2 = 2
+    // (a b)
+    // d c (a b)
+    // i = 0, e1 = -1, e2 = 1
+    if (i > e1 && i <= e2) {
+      while (i <= e2) {
+        // 新增节点
+        patch(null, c2[i], container, parentAnchor, parentComponent);
+        i++;
+      }
+    }
+
+    // 第四步：对比完相同节点后，发现少了一些节点的情况
+    // (a b) c d
+    // (a b)
+    // i = 2, e1 = 3, e2 = 1
+    // e a (b c)
+    // (b c)
+    // i = 0, e1 = 1, e2 = -1
+    else if (i <= e1 && i > e2) {
+      while (i <= e1) {
+        // 删除节点
+        hostRemove(c1[i].el as any);
+        i++;
+      }
+    } else {
+      // 第五步：未知序列，最复杂的情况了（中间可能存在新增、删除、位置变动）
+      // a b [c d e] f g
+      // a b [e c d] f g
+
+      const s1 = i; // prev starting index
+      const s2 = i; // next starting index
+
+      // 5.1 为新的 children 构建 key:index 的 map 对象
+      const keyToNewIndexMap = new Map();
+      for (i = s2; i <= e2; i++) {
+        // 遍历剩下的新的序列
+        // 将新的序列存储到 Map 中
+        const nextChild = c2[i];
+        keyToNewIndexMap.set(nextChild.key, i);
+        // key 是 nextChild.key
+        // value 是 索引 i
+      }
+
+      // 5.2 循环老的 children
+      // 处理删除和更新的操作
+      const needPatchCount = e2 - s2 + 1; // 需要做 patch 的总数
+      let patched = 0; // 记录 patch 的数量
+      const newIndexToOldIndex = new Array(needPatchCount).fill(0);
+      let needMoved = false; // 是否需要移动操作
+      let maxNewIndexSoFor = 0;
+      // newIndexToOldIndex 这个数组存储的是新节点在老 children 中的 index 索引
+      // 如果发现是 0 的话，那么就说明新值在老的里面不存在
+      for (i = s1; i <= e1; i++) {
+        const prevChild = c1[i];
+
+        if (patched >= needPatchCount) {
+          // 这是一步优化：判断如果新节点已经处理完毕，但是还在遍历老节点，那么这些老节点都删除即可
+          hostRemove(prevChild.el as any);
+        }
+        let newIndex; // 这个索引表示遍历到的老节点，在新的 children 中的位置
+        if (prevChild.key) {
+          // 一般都会走到这里，可快速找到
+          // 有 key 的情况下，可以使用 key 快速找到该节点在新的 children 中的位置
+          newIndex = keyToNewIndexMap.get(prevChild.key);
+        } else {
+          // 如果没有 key 的情况下，那么只能是遍历所有的新节点来找寻了
+          for (let j = s2; j <= e2; j++) {
+            if (isSameVNodeType(prevChild, c2[j])) {
+              newIndex = j;
+              break;
+            }
+          }
+        }
+
+        if (!newIndex) {
+          // 遍历到的老节点，在新 children 中不存在
+          // 删除节点
+          hostRemove(prevChild.el as any);
+        } else {
+          if (newIndex >= maxNewIndexSoFor) {
+            maxNewIndexSoFor = newIndex; // 记录上次的 new 位置
+          } else {
+            // 如果这一次的 newIndex 小于 上一次的 newIndex
+            // 说明需要移动
+            needMoved = true;
+          }
+
+          newIndexToOldIndex[newIndex - s2] = i + 1; // i + 1 是为了避免 0 的情况，因为默认值也是 0
+          // 遍历到的老节点，在新 children 中存在
+          // 更新节点
+          patch(prevChild, c2[newIndex], container, null, parentComponent);
+          patched++;
+        }
+      }
+
+      // 利用最长递增子序列来优化移动逻辑
+      // 这里主要是处理移动
+      // needMoved 这个标识是为了优化 getSequence，只有需要移动的情况才去求最长递增子序列
+      const increasingNewIndexSequence = needMoved
+        ? getSequence(newIndexToOldIndex)
+        : [];
+      let j = increasingNewIndexSequence.length - 1;
+      // 遍历剩下的需要处理的哪些节点
+      for (i = needPatchCount - 1; i >= 0; i--) {
+        // 从尾部开始处理，原因是因为这里我们要进行移动操作，使用的是 insertBefore，如果右侧的也是需要移动的元素，那么就会有问题，因此好的解决办法是，从右侧开始处理
+
+        const nextIndex = s2 + i;
+        const nextChild = c2[nextIndex];
+
+        // 此时需要计算锚点，精准的插入到某个元素前面
+        const anchor =
+          nextIndex + 1 < c2.length ? c2[nextIndex + 1].el : parentAnchor;
+
+        if (newIndexToOldIndex[i] === 0) {
+          // 此时说明老 children 中没有该节点，新增即可
+          patch(null, nextChild, container, anchor, parentComponent);
+        } else if (needMoved) {
+          // 需要移动
+          // j < 0 这里属于是优化手段
+          if (j < 0 || increasingNewIndexSequence[j] !== i) {
+            // 移动使用 insert 来完成
+            hostInsert(nextChild.el, container as any, anchor as any);
+          } else {
+            j--;
+          }
+        }
+      }
+    }
   };
 
   const patchChildren = (
@@ -266,7 +440,6 @@ export function createRenderer<
     anchor: RendererNode | null = null,
     parentComponent: ComponentInstance | null = null
   ) => {
-    debugger;
     const { patchFlag, shapeFlag } = n2;
     const { shapeFlag: prevShapeFlag } = n2;
     if (patchFlag > 0) {
