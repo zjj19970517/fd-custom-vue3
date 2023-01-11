@@ -76,6 +76,8 @@ export function track(
     // 正式依赖收集
     // 依赖收集的本质：触发属性的 get 后，将对应的 activeEffect 收集到该属性的 dep 中
     trackEffects(dep);
+
+    console.log('【 依赖收集 】', targetMap);
   }
 }
 

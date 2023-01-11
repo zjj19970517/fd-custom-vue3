@@ -1,5 +1,5 @@
 import { ReactiveEffect } from '@meils/vue-reactivity';
-import { ShapeFlags } from '@meils/vue-shared';
+import { EMPTY_OBJ, PatchFlags, ShapeFlags } from '@meils/vue-shared';
 import { createAppAPI, CreateAppFunction } from '../api/createApp';
 import {
   ComponentInstance,
@@ -91,7 +91,18 @@ export function createRenderer<
         patch(null, subTree, container, null, instance);
         instance.isMounted = true;
       } else {
-        // TODO: 更新组件
+        const prevTree = instance.subTree;
+        const subTree = (instance.subTree = renderComponent(instance));
+        if (prevTree) {
+          const container = prevTree.el as any;
+          patch(
+            prevTree,
+            subTree,
+            hostParentNode(container) as any,
+            null,
+            instance
+          );
+        }
       }
     };
     instance.effect = new ReactiveEffect<any>(renderFn, () => {
@@ -131,6 +142,7 @@ export function createRenderer<
       // 挂载组件
       mountComponent(n2, container, anchor, parentComponent);
     } else {
+      console.log('更新组件');
       // 更新组件
       // updateComponent(n1, n2);
     }
@@ -176,6 +188,156 @@ export function createRenderer<
     hostInsert(el, container as any, anchor as any);
   };
 
+  const patchProps = (
+    el: any,
+    oldProps: Record<string, unknown>,
+    newProps: Record<string, unknown>
+  ) => {
+    // 遍历一遍新值
+    for (const key in newProps) {
+      const prevProp = oldProps[key];
+      const nextProp = newProps[key];
+      if (prevProp && nextProp) {
+        // 新旧都有
+        if (prevProp !== nextProp) {
+          // 对比属性
+          // 需要交给 host 来更新 key
+          hostPatchProp(el, key, prevProp, nextProp);
+        }
+      } else if (nextProp) {
+        // 新值有，旧值无
+        hostPatchProp(el, key, null, nextProp);
+      }
+    }
+
+    for (const key in oldProps) {
+      // 遍历旧值，只处理前面没有处理的 key
+      const prevProp = oldProps[key];
+      const nextProp = newProps[key];
+      if (!(key in newProps)) {
+        hostPatchProp(el, key, prevProp, nextProp);
+      }
+    }
+  };
+
+  const updateElement = (
+    n1: VNode,
+    n2: VNode,
+    container: RendererElement,
+    anchor: RendererNode | null = null,
+    parentComponent: ComponentInstance | null = null
+  ) => {
+    const { dynamicChildren } = n2;
+    const el: any = (n2.el = n1.el);
+    const oldProps = (n1 && n1.props) || EMPTY_OBJ; // 旧 Props
+    const newProps = n2.props || EMPTY_OBJ; // 新 Props
+    // 处理 props 的差异
+    patchProps(el, oldProps, newProps);
+    const optimized = !!dynamicChildren;
+    // 处理 children 的差异
+    if (optimized) {
+      // 先处理稳定节点
+      patchBlockChildren(
+        n1.dynamicChildren!,
+        dynamicChildren,
+        el,
+        parentComponent
+      );
+    } else {
+      // 完整的 diff 逻辑
+      patchChildren(n1, n2, el, anchor, parentComponent);
+    }
+  };
+
+  const patchKeyedChildren = (
+    c1: VNode[],
+    c2: any[],
+    container: RendererElement,
+    parentAnchor: RendererNode | null,
+    parentComponent: ComponentInstance | null
+  ) => {
+    // diff 的核心
+  };
+
+  const patchChildren = (
+    n1: VNode,
+    n2: VNode,
+    container: RendererElement,
+    anchor: RendererNode | null = null,
+    parentComponent: ComponentInstance | null = null
+  ) => {
+    debugger;
+    const { patchFlag, shapeFlag } = n2;
+    const { shapeFlag: prevShapeFlag } = n2;
+    if (patchFlag > 0) {
+      if (patchFlag & PatchFlags.KEYED_FRAGMENT) {
+        // Fragment 节点，children 有 key
+        patchKeyedChildren(
+          n1.children as any[],
+          n2.children as any[],
+          container,
+          anchor,
+          parentComponent
+        );
+        return;
+      } else if (patchFlag & PatchFlags.UNKEYED_FRAGMENT) {
+        // Fragment 节点，children 无 key
+        return;
+      }
+    }
+    // 对于一个元素的子节点 vnode 可能会有三种情况：纯文本、vnode 数组和空
+    if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      // 新的节点为数组类型
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        // 数组 -> 数组
+      } else if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        // 文本 -> 数组
+      } else {
+        // 空 -> 数组
+      }
+    } else if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      // 新的节点为文本类型
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        // 数组 -> 文本
+      } else if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        // 文本 -> 文本
+        if (n1.children !== n2.children) {
+          console.log('文本更新', n2.children);
+          hostSetElementText(container as any, n2.children);
+        }
+      } else {
+        // 空 -> 文本
+        hostSetElementText(container as any, n2.children);
+      }
+    } else {
+      // 新的节点为空
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        // 数组 -> 空
+      } else if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        // 文本 -> 空
+        hostSetElementText(container as any, '');
+      }
+    }
+  };
+
+  const patchBlockChildren = (
+    oldChildren: any[],
+    newChildren: any[],
+    fallbackContainer: RendererElement,
+    parentComponent: ComponentInstance | null
+  ) => {
+    // 稳定的 Block，只需挨个遍历即可
+    for (let i = 0; i < newChildren.length; i++) {
+      const oldVNode = oldChildren[i];
+      const newVNode = newChildren[i];
+      const container =
+        oldVNode && newVNode.type === Fragment
+          ? hostParentNode(oldVNode.el)!
+          : fallbackContainer;
+      patch(oldVNode, newVNode, container, null, parentComponent);
+    }
+  };
+
   // 处理元素类型
   const processElement = (
     n1: VNode | null,
@@ -189,7 +351,7 @@ export function createRenderer<
       mountElement(n2, container, anchor, parentComponent);
     } else {
       // 更新组件
-      // updateComponent(n1, n2);
+      updateElement(n1, n2, container, anchor, parentComponent);
     }
   };
 
@@ -217,11 +379,30 @@ export function createRenderer<
     parentComponent: ComponentInstance | null = null
   ) => {
     if (n1 == null) {
-      // 挂载组件
+      // Fragment 节点的 el 属性，设置为一个空文本节点
+      const fragmentStartAnchor = (n2.el = hostCreateText('')!);
+      hostInsert(fragmentStartAnchor, container as any, anchor as any);
       mountChildren(n2.children, container, null, parentComponent);
     } else {
-      // 更新组件
-      // updateComponent(n1, n2);
+      debugger;
+      // 更新 Fragment
+      if (
+        n2.patchFlag > 0 &&
+        n2.patchFlag & PatchFlags.STABLE_FRAGMENT &&
+        n2.dynamicChildren &&
+        n1.dynamicChildren
+      ) {
+        // Fragment 是稳定的 Block
+        patchBlockChildren(
+          n1.dynamicChildren!,
+          n2.dynamicChildren,
+          n2.el!,
+          parentComponent
+        );
+      } else {
+        // 处理不稳定的 children
+        patchChildren(n1, n2, container, anchor, parentComponent);
+      }
     }
   };
 
@@ -232,7 +413,7 @@ export function createRenderer<
     anchor: RendererNode | null = null,
     parentComponent: ComponentInstance | null = null
   ) => {
-    // console.info('【 debug: exec patch 】', n1, n2, container);
+    console.info('【 debug: exec patch 】', n1, n2, container);
     if (n1 === n2) {
       return;
     }
