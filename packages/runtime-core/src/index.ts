@@ -26,6 +26,14 @@ export {
   watchPostEffect,
   watchSyncEffect
 } from './api/watch';
+export {
+  onBeforeMount,
+  onMounted,
+  onBeforeUnmount,
+  onBeforeUpdate,
+  onUnmounted,
+  onUpdated
+} from './api/lifecycle';
 
 // compiler
 export { registerRuntimeCompiler } from './internal/component/component';

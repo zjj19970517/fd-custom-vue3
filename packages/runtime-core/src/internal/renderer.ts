@@ -3,7 +3,12 @@ import {
   ReactiveEffect,
   resetTracking
 } from '@meils/vue-reactivity';
-import { EMPTY_OBJ, PatchFlags, ShapeFlags } from '@meils/vue-shared';
+import {
+  EMPTY_OBJ,
+  invokeArrayFns,
+  PatchFlags,
+  ShapeFlags
+} from '@meils/vue-shared';
 import { createAppAPI, CreateAppFunction } from '../api/createApp';
 import {
   ComponentInstance,
@@ -16,7 +21,7 @@ import {
   shouldUpdateComponent
 } from './component/componentRender';
 import { getSequence } from './getSequence';
-import { queueJob, SchedulerJob } from './scheduler';
+import { queueJob, queuePostFlushCb, SchedulerJob } from './scheduler';
 import { Fragment, normalizeVNode, VNode } from './vnode';
 
 export interface RendererNode {
@@ -94,12 +99,28 @@ export function createRenderer<
       if (!instance.isMounted) {
         // 挂载组件
         // 渲染组件生成子树 vnode
+        const { bm, m } = instance;
+        // beforeMount hook
+        // 同步执行
+        if (bm) {
+          invokeArrayFns(bm);
+        }
         const subTree = (instance.subTree = renderComponent(instance));
         console.log(' 【 debug： render subTree 】 ', subTree);
         // 把子树 vnode 挂载到 container 中
         patch(null, subTree, container, null, instance);
         instance.isMounted = true;
+
+        // 异步执行，post
+        // mounted hook
+        if (m) {
+          queuePostFlushCb(m);
+        }
       } else {
+        const { bu, u } = instance;
+        if (bu) {
+          invokeArrayFns(bu);
+        }
         const prevTree = instance.subTree;
         const subTree = (instance.subTree = renderComponent(instance));
         if (prevTree) {
@@ -111,6 +132,11 @@ export function createRenderer<
             null,
             instance
           );
+
+          // updated hook
+          if (u) {
+            queuePostFlushCb(u);
+          }
         }
       }
     };

@@ -1,4 +1,11 @@
-import { createApp, reactive, watchEffect, watch } from '../../dist/vue.esm.js';
+import {
+  createApp,
+  reactive,
+  watchEffect,
+  watch,
+  onBeforeMount,
+  onMounted
+} from '../../dist/vue.esm.js';
 
 const app = createApp({
   name: 'App',
@@ -26,6 +33,14 @@ const app = createApp({
     window.onChange = () => {
       state.count++;
     };
+
+    onBeforeMount(() => {
+      console.log('生命周期', 'onBeforeMount');
+    });
+
+    onMounted(() => {
+      console.log('生命周期', 'onMounted');
+    });
 
     window.onStop = () => {
       stop();

@@ -56,7 +56,7 @@ pnpm run dev vue -f global
 - [x] 完善子组件更新流程
 - [x] 异步更新机制 Scheduler
 - [x] 实现 watch、watchEffect
-- [x] 
+- [x] 实现生命周期
 - doing...
 
 ## Notes

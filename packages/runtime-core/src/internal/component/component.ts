@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { EMPTY_OBJ, isFunction, isObject, ShapeFlags } from '@meils/vue-shared';
 import {
   pauseTracking,
@@ -21,6 +22,7 @@ import {
 } from './componentProps';
 import { VNode } from '../vnode';
 import { PublicCtxProxyHandler } from './componentCtxProxy';
+import { LifecycleHooks } from '../../api/lifecycle';
 
 export type Component = any;
 
@@ -31,6 +33,8 @@ export type CtxProxy = any;
 export type InternalRenderFunction = {
   (ctx: any): any;
 };
+
+type LifecycleHook<TFn = Function> = TFn[] | null;
 
 export interface ComponentInstance {
   uid: number; // 唯一 ID
@@ -61,6 +65,12 @@ export interface ComponentInstance {
   isUnmounted: boolean;
   isDeactivated: boolean;
   subTree: VNode | null;
+  [LifecycleHooks.BEFORE_MOUNT]: LifecycleHook;
+  [LifecycleHooks.MOUNTED]: LifecycleHook;
+  [LifecycleHooks.BEFORE_UPDATE]: LifecycleHook;
+  [LifecycleHooks.UPDATED]: LifecycleHook;
+  [LifecycleHooks.BEFORE_UNMOUNT]: LifecycleHook;
+  [LifecycleHooks.UNMOUNTED]: LifecycleHook;
 }
 
 export interface SetupContext {
@@ -128,7 +138,13 @@ export function createComponentInstance(
     isMounted: false,
     isUnmounted: false,
     isDeactivated: false,
-    subTree: null
+    subTree: null,
+    bm: null,
+    m: null,
+    bu: null,
+    u: null,
+    um: null,
+    bum: null
   };
 
   instance.ctx = { _: instance };
