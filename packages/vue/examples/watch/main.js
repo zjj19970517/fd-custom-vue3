@@ -49,14 +49,21 @@ const app = createApp({
       state.count++;
     };
 
+    const onClick = () => {
+      console.log('点击事件');
+      state.count++;
+    };
+
     return {
-      state
+      state,
+      onClick
     };
   },
   template: `
       <div>
         <p>Watch</p>
         <p>Count: {{ this.state.count }}</p>
+        <button @click="this.onClick">更新 Count</button>
       </div>
     `
 });

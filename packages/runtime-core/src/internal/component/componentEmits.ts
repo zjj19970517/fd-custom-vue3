@@ -1,4 +1,4 @@
-import { isArray } from '@meils/vue-shared';
+import { camelize, capitalize, isArray } from '@meils/vue-shared';
 import { ComponentInstance } from './component';
 
 export type NormalizedObjectEmitsOptions = Record<
@@ -28,5 +28,10 @@ export function emit(
   event: string,
   ...rawArgs: any[]
 ) {
-  console.log('emit', instance, event, rawArgs);
+  const attrs = instance.attrs;
+  // eslint-disable-next-line prettier/prettier, @typescript-eslint/ban-types
+  const handler = attrs['on' + capitalize((camelize(event)))] as Function;
+  if (handler) {
+    handler(...rawArgs);
+  }
 }
