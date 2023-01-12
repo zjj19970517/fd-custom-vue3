@@ -28,7 +28,8 @@ const app = createApp({
     const state = reactive({
       count: 100,
       name: 'zjj',
-      age: 100
+      age: 100,
+      list: ['A', 'B', 'C']
     });
 
     const onClick = () => {
@@ -41,7 +42,9 @@ const app = createApp({
     // }, 2000);
 
     const onChange = () => {
+      state.count = 101;
       state.name = 'meils';
+      state.list = ['A', 'B', 'D', 'E'];
     };
 
     window.onChange = onChange;
@@ -56,6 +59,7 @@ const app = createApp({
         <p>静态节点</p>
         <p>Count: {{ this.state.count }}</p>
         <test-name :name="this.state.name" :age="this.state.age" @select="this.onClick"></test-name>
+        <span v-for="item in this.state.list" :key="item">{{ item }}</span>
       </div>
     `
 });

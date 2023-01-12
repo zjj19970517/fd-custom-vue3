@@ -16,6 +16,7 @@ import {
   shouldUpdateComponent
 } from './component/componentRender';
 import { getSequence } from './getSequence';
+import { queueJob, SchedulerJob } from './scheduler';
 import { Fragment, normalizeVNode, VNode } from './vnode';
 
 export interface RendererNode {
@@ -113,12 +114,10 @@ export function createRenderer<
         }
       }
     };
-    instance.effect = new ReactiveEffect<any>(renderFn, () => {
-      // 响应式状态更新
-      // TODO: 需要异步执行
-      update();
-    });
-    const update = (instance.update = () => instance.effect?.run());
+    instance.effect = new ReactiveEffect<any>(renderFn, () => queueJob(update));
+    const update: SchedulerJob = (instance.update = () =>
+      instance.effect?.run());
+    update.id = instance.uid; // 这个 id 主要是用来对异步更新任务进行排序的
     instance.update();
   };
 

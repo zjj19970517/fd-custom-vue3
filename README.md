@@ -53,7 +53,8 @@ pnpm run dev vue -f global
 - [x] 测试 patchKeyedChildren 逻辑
 - [x] 完善 resolveComponent 
 - [x] 完善子组件注册和挂载流程
-- [ ] 完善子组件更新流程
+- [x] 完善子组件更新流程
+- [x] 异步更新机制
 - doing...
 
 ## Notes
