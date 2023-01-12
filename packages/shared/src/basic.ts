@@ -26,3 +26,8 @@ const camelizeRE = /-(\w)/g;
 export const camelize = cacheStringFunction((str: string): string => {
   return str.replace(camelizeRE, (_, c) => (c ? c.toUpperCase() : ''));
 });
+
+// 小驼峰转换为大驼峰
+export const capitalize = cacheStringFunction(
+  (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
+);

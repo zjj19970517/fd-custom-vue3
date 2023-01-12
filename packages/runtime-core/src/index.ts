@@ -34,7 +34,7 @@ export {
   toDisplayString,
   renderList
 } from './internal/vnode/utils';
-
+export * from './internal/vnode/resolveAssets';
 export { createVNode, createBaseVNode, Text, Fragment } from './internal/vnode';
 
 // types export

@@ -50,6 +50,10 @@ pnpm run dev vue -f global
 - [x] 调试并确保依赖收集的正确性
 - [x] 完善 update 流程之 updateElement、updateFragment
 - [x] 完善 update 流程之 patchKeyedChildren
+- [x] 测试 patchKeyedChildren 逻辑
+- [x] 完善 resolveComponent 
+- [x] 完善子组件注册和挂载流程
+- [ ] 完善子组件更新流程
 - doing...
 
 ## Notes

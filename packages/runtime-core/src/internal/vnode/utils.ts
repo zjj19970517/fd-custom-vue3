@@ -98,7 +98,7 @@ export function createElementVNode(
 }
 
 /**
- * For converting {{ interpolation }} values to displayed strings.
+ * 用来转换模版字符串 converting {{ interpolation }} values
  * @private
  */
 export const toDisplayString = (val: unknown): string => {
@@ -115,7 +115,6 @@ export const toDisplayString = (val: unknown): string => {
 };
 
 const replacer = (_key: string, val: any): any => {
-  // can't use isRef here since @vue/shared has no deps
   if (val && val.__v_isRef) {
     return replacer(_key, val.value);
   } else if (isMap(val)) {
@@ -135,6 +134,13 @@ const replacer = (_key: string, val: any): any => {
   return val;
 };
 
+/**
+ * 渲染列表
+ * for 循环时会使用
+ * @param source 数据源
+ * @param renderItem 渲染 item 项的函数
+ * @returns
+ */
 export function renderList(
   source: Array<any>,
   renderItem: (...args: any[]) => any
