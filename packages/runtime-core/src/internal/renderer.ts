@@ -1,4 +1,8 @@
-import { ReactiveEffect } from '@meils/vue-reactivity';
+import {
+  pauseTracking,
+  ReactiveEffect,
+  resetTracking
+} from '@meils/vue-reactivity';
 import { EMPTY_OBJ, PatchFlags, ShapeFlags } from '@meils/vue-shared';
 import { createAppAPI, CreateAppFunction } from '../api/createApp';
 import {
@@ -6,8 +10,11 @@ import {
   createComponentInstance,
   setupComponent
 } from './component/component';
-import { isReservedProp } from './component/componentProps';
-import { renderComponent } from './component/componentRender';
+import { isReservedProp, updateProps } from './component/componentProps';
+import {
+  renderComponent,
+  shouldUpdateComponent
+} from './component/componentRender';
 import { getSequence } from './getSequence';
 import { Fragment, normalizeVNode, VNode } from './vnode';
 
@@ -123,12 +130,38 @@ export function createRenderer<
   ) => {
     // 第一步：创建组件实例
     const instance = createComponentInstance(initialVNode, parentComponent);
+    initialVNode.component = instance;
 
     // 第二步：组件初始化
     setupComponent(instance);
 
     // 第三步：设置并运行带副作用的渲染函数
     setupRenderEffect(instance, initialVNode, container, anchor);
+  };
+
+  const updateComponent = (
+    n1: VNode,
+    n2: VNode,
+    container: RendererElement,
+    anchor: RendererNode | null = null,
+    parentComponent: ComponentInstance | null = null
+  ) => {
+    const instance = (n2.component = n1.component);
+    if (shouldUpdateComponent(n1, n2)) {
+      const prevProps = instance.vnode.props;
+      n2.component = instance;
+      instance.vnode = n2;
+      // 更新属性
+      updateProps(instance, n2.props, prevProps);
+      pauseTracking();
+      // 这里需要是异步执行
+      instance.update();
+      resetTracking();
+    } else {
+      n2.component = n1.component;
+      n2.el = n1.el;
+      instance.vnode = n2;
+    }
   };
 
   // 处理组件类型节点
@@ -143,9 +176,8 @@ export function createRenderer<
       // 挂载组件
       mountComponent(n2, container, anchor, parentComponent);
     } else {
-      console.log('更新组件');
       // 更新组件
-      // updateComponent(n1, n2);
+      updateComponent(n1, n2, container, anchor, parentComponent);
     }
   };
 

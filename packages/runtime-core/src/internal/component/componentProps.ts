@@ -1,5 +1,11 @@
 import { shallowReactive } from '@meils/vue-reactivity';
-import { camelize, hasOwn, isFunction, isObject } from '@meils/vue-shared';
+import {
+  camelize,
+  hasOwn,
+  isFunction,
+  isObject,
+  PatchFlags
+} from '@meils/vue-shared';
 
 import { ComponentInstance, Data } from './component';
 
@@ -132,4 +138,56 @@ export function normalizePropsOptions(type: any) {
  */
 export function isReservedProp(propsKey: string) {
   return ['key', 'ref'].includes(propsKey);
+}
+
+export function updateProps(
+  instance: ComponentInstance,
+  rawProps: Data | null,
+  rawPrevProps: Data | null
+) {
+  const {
+    props,
+    attrs,
+    vnode: { patchFlag }
+  } = instance;
+
+  const [options] = instance.propsOptions; // props 配置 options
+
+  if (patchFlag > 0 && !(patchFlag & PatchFlags.FULL_PROPS)) {
+    // 非全量更新
+    if (patchFlag & PatchFlags.PROPS) {
+      // 如果只是 props 更新
+      // 获取 dynamicProps
+      const needUpdateProps = instance.vnode.dynamicProps!;
+      for (let i = 0; i < needUpdateProps.length; i++) {
+        // 只针对 dynamicProps 更新
+        const key = needUpdateProps[i];
+        const value = rawProps![key];
+        if (options) {
+          // 如果是事件属性，跳过
+          if (hasOwn(instance.emitsOptions, key)) {
+            continue;
+          }
+          if (hasOwn(attrs, key)) {
+            if (value !== attrs[key]) {
+              attrs[key] = value;
+            }
+          } else {
+            const camelizedKey = camelize(key);
+            props[camelizedKey] = value;
+          }
+        } else {
+          if (value !== attrs[key]) {
+            attrs[key] = value;
+          }
+        }
+      }
+    }
+  } else {
+    // 全量更新
+    const nextKeys = Object.keys(rawProps as any);
+    const prevKeys = Object.keys(rawPrevProps as any);
+    console.log('全量更新', prevKeys, nextKeys);
+    // 编译器处理后，一般都是 非全量更新
+  }
 }
