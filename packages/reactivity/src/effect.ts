@@ -76,8 +76,6 @@ export function track(
     // 正式依赖收集
     // 依赖收集的本质：触发属性的 get 后，将对应的 activeEffect 收集到该属性的 dep 中
     trackEffects(dep);
-
-    console.log('【 依赖收集 】', targetMap);
   }
 }
 
@@ -190,6 +188,7 @@ export class ReactiveEffect<T = any> {
   deps = [] as Dep[]; // 属性访问要收集依赖（将 ReactiveEffect 收集到 dep中），依赖同样也要记录它被哪些 dep 收集了
   parent: ReactiveEffect | undefined | null = null; // 上一个 ReactiveEffect 的实例
 
+  public onStop?: () => void;
   computed = false; // 计算属性时使用
 
   constructor(
@@ -223,6 +222,24 @@ export class ReactiveEffect<T = any> {
       this.parent = undefined;
     }
   }
+
+  stop() {
+    if (this.active) {
+      cleanupEffect(this);
+      if (this.onStop) {
+        this.onStop();
+      }
+      this.active = false;
+    }
+  }
+}
+
+function cleanupEffect(effect: ReactiveEffect) {
+  effect.deps.forEach(dep => {
+    dep.delete(effect);
+  });
+
+  effect.deps.length = 0;
 }
 
 // ========================================== ReactiveEffect end =========================================

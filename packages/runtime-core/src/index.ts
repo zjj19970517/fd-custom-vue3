@@ -20,6 +20,12 @@ export {
 // api
 export { createRenderer } from './internal/renderer';
 export { h } from './api/h';
+export {
+  watch,
+  watchEffect,
+  watchPostEffect,
+  watchSyncEffect
+} from './api/watch';
 
 // compiler
 export { registerRuntimeCompiler } from './internal/component/component';
@@ -44,3 +50,12 @@ export type {
   RendererOptions,
   Renderer
 } from './internal/renderer';
+
+export type {
+  WatchCallback,
+  OnCleanup,
+  WatchEffect,
+  WatchOptionsBase,
+  WatchOptions,
+  WatchStopHandle
+} from './api/watch';
