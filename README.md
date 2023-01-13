@@ -16,14 +16,13 @@
 # 安装依赖
 pnpm i
 
-# 开发调试构建 package，使用 dev script，具体使用参考如下
-pnpm run dev reactivity -f esm
-pnpm run dev vue -f global
+# 开发调试
+pnpm run dev:all
 ```
 
 ## Fixtures
 
-> 按照如下流程来完成：
+### 第一阶段：
 
 - [x] reactive 的实现
 - [x] effect 的实现
@@ -60,9 +59,12 @@ pnpm run dev vue -f global
 - [x] 调试DOM事件绑定、emit 派发事件
 - [x] 实现 provide / inject / app.provide
 - [x] 实现 app.use / app.component
-- doing...
+
+### 第二阶段：
+
+- [ ] 规划中...
 
 ## Notes
 
-* 该项目是学习型项目，重点在于 Vue 内部逻辑的实现，TS 类型声明完善不是重点。
+* 该项目是学习型项目，重点在于 Vue 内部逻辑的实现，TS 类型声明完善不是重点、package 打包构建不是重点。
 * 该项目本质是 Vue3 源码的简化版本，为了方便以后学习和回顾 Vue3 源码逻辑，因此在变量命名和具体实现上尽可能靠近 Vue3 源码本身。
