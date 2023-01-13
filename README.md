@@ -58,7 +58,8 @@ pnpm run dev vue -f global
 - [x] 实现 watch、watchEffect
 - [x] 实现生命周期
 - [x] 调试DOM事件绑定、emit 派发事件
-- [x] 实现 provide / inject
+- [x] 实现 provide / inject / app.provide
+- [x] 实现 app.use / app.component
 - doing...
 
 ## Notes

@@ -1,3 +1,4 @@
+import { isFunction } from '@meils/vue-shared';
 import { Data } from '../internal/component/component';
 import {
   genAppConfig,
@@ -10,7 +11,16 @@ export interface AppContext {
   app: App; // App 实例
   config: AppConfig;
   provides: Data;
+  components: Data;
 }
+
+type PluginInstallFunction = (app: App, ...options: any[]) => any;
+
+export type Plugin =
+  | (PluginInstallFunction & { install?: PluginInstallFunction })
+  | {
+      install: PluginInstallFunction;
+    };
 
 export interface App<HostElement = any> {
   // _ 开头的属性是私有属性
@@ -21,7 +31,9 @@ export interface App<HostElement = any> {
   config: AppConfig; // 全局配置
   mount(rootContainer: HostElement | string): void; // 挂载函数
   unmount(): void; // 卸载函数
-  provide: (key: string, val: any) => App;
+  provide: (key: string, val: any) => this;
+  component(name: string, component: any): this;
+  use(plugin: Plugin, ...options: any[]): this;
 }
 
 export type CreateAppFunction<HostElement> = (
@@ -43,6 +55,7 @@ export function createAppAPI<HostElement>(
   return function createApp(hostComponent: any, rootProps = null): App {
     const context = createAppContext();
     const isMounted = false; // 是否已经 Mount 挂载完毕
+    const installedPlugins = new Set(); // 安装成功的插件集合
     const app: App = (context.app = {
       _context: context,
       _uid: uid++,
@@ -78,6 +91,23 @@ export function createAppAPI<HostElement>(
       provide(key: string, value: any) {
         context.provides[key] = value;
         return app;
+      },
+      use(plugin, ...options) {
+        if (installedPlugins.has(plugin)) {
+          console.warn(`Plugin has been installed`);
+        } else if (plugin && isFunction(plugin.install)) {
+          installedPlugins.add(plugin);
+          plugin.install(app, ...options);
+        } else if (isFunction(plugin)) {
+          installedPlugins.add(plugin);
+          plugin(app, ...options);
+        }
+
+        return app;
+      },
+      component(name: string, component: any): any {
+        context.components[name] = component;
+        return app;
       }
     });
 
@@ -93,6 +123,7 @@ export function createAppContext(): AppContext {
   return {
     app: {} as App,
     config: genAppConfig(),
-    provides: {}
+    provides: {},
+    components: {}
   };
 }
