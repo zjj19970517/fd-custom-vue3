@@ -3,7 +3,7 @@ import { registerRuntimeCompiler } from '@meils/vue-runtime-dom';
 
 export * from '@meils/vue-runtime-dom';
 
-import { compile } from '@vue/compiler-dom'; // 先使用 Vue 自身的编译器
+import { compile } from '@vue/compiler-dom'; // FIXME: 先使用 Vue 自身的编译器
 
 function compileToFunction(template: any, options = {}) {
   const { code } = compile(

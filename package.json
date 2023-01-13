@@ -5,7 +5,13 @@
   "private": true,
   "scripts": {
     "dev": "node ./scripts/run-dev.js",
-    "test": "vitest"
+    "test": "vitest",
+    "dev:shared": "pnpm run dev shared -f esm",
+    "dev:reactivity": "pnpm run dev reactivity -f esm",
+    "dev:runtime-core": "pnpm run dev runtime-core -f esm",
+    "dev:runtime-dom": "pnpm run dev runtime-dom -f esm",
+    "dev:vue": "pnpm run dev vue -f esm",
+    "dev:all": "pnpm run dev:shared & pnpm run dev:reactivity & pnpm run dev:runtime-core & pnpm run dev:runtime-dom & pnpm run dev:vue"
   },
   "keywords": [],
   "author": " <1392372716@qq.com>",
