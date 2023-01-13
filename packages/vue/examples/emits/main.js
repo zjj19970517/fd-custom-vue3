@@ -1,4 +1,4 @@
-import { createApp, reactive, h } from '../../dist/vue.esm.js';
+import { createApp, reactive, provide, inject } from '../../dist/vue.esm.js';
 
 const TestName = {
   name: 'TestName',
@@ -13,6 +13,10 @@ const TestName = {
     const handleClick = () => {
       ctx.emit('select', 'foo');
     };
+
+    const value = inject('first');
+    const globalValue = inject('global');
+    console.log('value', value, globalValue);
     return {
       handleClick
     };
@@ -42,6 +46,8 @@ const app = createApp({
       console.log('onSelect');
     };
 
+    provide('first', 'hello');
+
     return {
       state,
       onSelect
@@ -55,6 +61,8 @@ const app = createApp({
       </div>
     `
 });
+
+app.provide('global', 'dark');
 
 app.mount('#app');
 

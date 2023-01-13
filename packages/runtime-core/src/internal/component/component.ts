@@ -23,6 +23,7 @@ import {
 import { VNode } from '../vnode';
 import { PublicCtxProxyHandler } from './componentCtxProxy';
 import { LifecycleHooks } from '../../api/lifecycle';
+import { currentRenderingInstance } from './componentRenderContext';
 
 export type Component = any;
 
@@ -71,6 +72,8 @@ export interface ComponentInstance {
   [LifecycleHooks.UPDATED]: LifecycleHook;
   [LifecycleHooks.BEFORE_UNMOUNT]: LifecycleHook;
   [LifecycleHooks.UNMOUNTED]: LifecycleHook;
+
+  provides: Data;
 }
 
 export interface SetupContext {
@@ -87,7 +90,7 @@ export let currentInstance: ComponentInstance | null = null; // 当前运行的�
 
 // 获取当前执行的组件实例
 export const getCurrentInstance: () => ComponentInstance | null = () =>
-  currentInstance;
+  currentInstance || currentRenderingInstance;
 
 // 设置当前执行的组件实例
 export const setCurrentInstance = (instance: ComponentInstance) => {
@@ -144,7 +147,8 @@ export function createComponentInstance(
     bu: null,
     u: null,
     um: null,
-    bum: null
+    bum: null,
+    provides: parent ? parent.provides : appContext.provides
   };
 
   instance.ctx = { _: instance };

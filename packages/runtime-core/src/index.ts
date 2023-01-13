@@ -34,7 +34,7 @@ export {
   onUnmounted,
   onUpdated
 } from './api/lifecycle';
-
+export { provide, inject } from './api/provide';
 // compiler
 export { registerRuntimeCompiler } from './internal/component/component';
 

@@ -1,3 +1,4 @@
+import { Data } from '../internal/component/component';
 import {
   genAppConfig,
   AppConfig,
@@ -8,6 +9,7 @@ import { createVNode } from '../internal/vnode';
 export interface AppContext {
   app: App; // App 实例
   config: AppConfig;
+  provides: Data;
 }
 
 export interface App<HostElement = any> {
@@ -19,6 +21,7 @@ export interface App<HostElement = any> {
   config: AppConfig; // 全局配置
   mount(rootContainer: HostElement | string): void; // 挂载函数
   unmount(): void; // 卸载函数
+  provide: (key: string, val: any) => App;
 }
 
 export type CreateAppFunction<HostElement> = (
@@ -71,6 +74,10 @@ export function createAppAPI<HostElement>(
         } else {
           console.warn('The app is not mounted yet');
         }
+      },
+      provide(key: string, value: any) {
+        context.provides[key] = value;
+        return app;
       }
     });
 
@@ -85,6 +92,7 @@ export function createAppAPI<HostElement>(
 export function createAppContext(): AppContext {
   return {
     app: {} as App,
-    config: genAppConfig()
+    config: genAppConfig(),
+    provides: {}
   };
 }

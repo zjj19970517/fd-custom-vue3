@@ -57,6 +57,8 @@ pnpm run dev vue -f global
 - [x] 异步更新机制 Scheduler
 - [x] 实现 watch、watchEffect
 - [x] 实现生命周期
+- [x] 调试DOM事件绑定、emit 派发事件
+- [x] 实现 provide / inject
 - doing...
 
 ## Notes
