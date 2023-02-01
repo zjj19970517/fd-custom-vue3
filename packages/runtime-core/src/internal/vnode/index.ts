@@ -47,6 +47,7 @@ export const createVNode = (
   dynamicProps: string[] | null = null
 ) => {
   // 判断虚拟节点的 shapeFlag 标记
+  // 或者说是 vnode 的类型
   const shapeFlag = isString(type)
     ? ShapeFlags.ELEMENT
     : isObject(type)
@@ -80,7 +81,7 @@ export function createBaseVNode(
     type,
     props,
     children,
-    component: null, // 虚拟节点
+    component: null, // 对应的组件
     key: props && (props.key as string),
     shapeFlag,
     patchFlag,
@@ -102,13 +103,13 @@ export function createBaseVNode(
   }
 
   // 规范化 children
+  // 更新 vnode.shapeFlag
   normalizeChildren(vnode, children);
 
   if (currentBlock && vnode.patchFlag > 0 && !isBlockNode) {
     // 收集 dynamicChildren
     currentBlock.push(vnode);
   }
-
   return vnode;
 }
 

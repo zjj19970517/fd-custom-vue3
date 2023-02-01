@@ -31,6 +31,7 @@ export const onUnmounted = createHook(LifecycleHooks.UNMOUNTED);
 
 function registerHook(type: LifecycleHooks, hook: Function) {
   if (currentInstance) {
+    // 获取当前运行实例上的 hook
     const hooks = currentInstance[type] || (currentInstance[type] = []);
     const hookWrapper = (...args: unknown[]) => {
       pauseTracking();

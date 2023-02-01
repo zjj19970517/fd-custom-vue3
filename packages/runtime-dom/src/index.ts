@@ -6,15 +6,15 @@
 import { createRenderer, Renderer } from '@meils/vue-runtime-core';
 import { isString } from '@meils/vue-shared';
 
-import { nodeOps } from './nodeOps';
-import { patchProp } from './patchProps';
+import { nodeOps } from './nodeOps'; // 节点操作方法
+import { patchProp } from './patchProps'; // 属性操作方法
 
 let renderer: Renderer; // 缓存全局渲染器
 
 // 渲染器选项（ DOM场景专用 ）
 const rendererOptions = Object.assign({}, nodeOps, { patchProp });
 
-// 确保 renderer
+// 获取 renderer
 function ensureRenderer() {
   // 如果创建过一遍了，就不需要再创建了，直接复用全局的
   return renderer || (renderer = createRenderer(rendererOptions));
@@ -33,7 +33,7 @@ export const createApp = (
   // 调用 renderer 的 createApp 方法获得 app 实例
   const app = ensureRenderer().createApp(rootComponent, rootProps);
   const { mount } = app;
-  // 重写 mount
+  // Web 宿主环境下，重写 mount
   app.mount = (containerOrSelector: Element | string) => {
     let container: Element | string | null = null;
     if (isString(containerOrSelector)) {

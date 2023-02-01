@@ -105,13 +105,16 @@ export function createRenderer<
         if (bm) {
           invokeArrayFns(bm);
         }
+        // 这里我们要区分 subTree 和 initialVNode
+        // initialVNode 可理解为组件占位 vnode（ Vue2 是 _vnode ）
+        // subTree 代表组件内部的 vnode（ Vue2 是 $vnode ）
         const subTree = (instance.subTree = renderComponent(instance));
-        console.log(' 【 debug： render subTree 】 ', subTree);
         // 把子树 vnode 挂载到 container 中
+        // 组件子树内部的根 vnode 可能是 Element 类型也可能是 Fragment 类型
+        // 下一步的 patch 会进入 Element 或者 Fragment 的逻辑
         patch(null, subTree, container, null, instance);
         instance.isMounted = true;
 
-        // 异步执行，post
         // mounted hook
         if (m) {
           queuePostFlushCb(m);
@@ -179,7 +182,6 @@ export function createRenderer<
       // 更新属性
       updateProps(instance, n2.props, prevProps);
       pauseTracking();
-      // 这里需要是异步执行
       instance.update();
       resetTracking();
     } else {
@@ -212,6 +214,7 @@ export function createRenderer<
     anchor: RendererNode | null,
     parentComponent: ComponentInstance | null
   ) => {
+    // 因为是 mount 逻辑，只需遍历 patch 处理一遍即可
     for (let i = 0; i < children.length; i++) {
       const child = normalizeVNode(children[i]);
       patch(null, child, container, anchor, parentComponent);
@@ -679,7 +682,7 @@ export function createRenderer<
     }
   };
 
-  // 渲染虚拟 DOM 至 真实 DOM 内
+  // 渲染虚拟 DOM 至 宿主容器内
   const render = (
     vnode: VNode,
     container: RendererElement | null,
@@ -688,8 +691,7 @@ export function createRenderer<
   ) => {
     if (!vnode) {
       if (container?._vnode) {
-        // 卸载
-        // unmount(container._vnode, null, null, true);
+        // TODO: 卸载宿主容器内的元素内容
       }
     } else {
       // 挂载
@@ -705,6 +707,7 @@ export function createRenderer<
   };
 
   return {
+    // 只所以传入 render 渲染函数，是因为我们创建的 app.mount 方法里需要调用 render 函数
     createApp: createAppAPI(render)
   };
 }

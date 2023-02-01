@@ -91,6 +91,7 @@ export function parseProps(
 
   if (needCaseDefaultKeys && options) {
     let opt;
+    // 需要处理默认值的 key
     needCaseDefaultKeys.forEach(key => {
       if (!hasValueProps.includes(key)) {
         opt = options[key];

@@ -58,6 +58,7 @@ export interface ComponentInstance {
   emit: any; // emit 事件
   render: InternalRenderFunction | null;
   effect: ReactiveEffect | null;
+  // 带副作用更新函数
   // eslint-disable-next-line @typescript-eslint/ban-types
   update: Function | null;
 
@@ -123,8 +124,9 @@ export function createComponentInstance(
     parent,
     appContext,
     root: null,
-    propsOptions: normalizePropsOptions(type),
-    emitsOptions: normalizeEmitsOptions(type),
+    propsOptions: normalizePropsOptions(type), // 标准化出 props 选项
+    emitsOptions: normalizeEmitsOptions(type), // 标准化出 emits 选项
+
     setupState: EMPTY_OBJ,
     props: EMPTY_OBJ,
     attrs: EMPTY_OBJ,
@@ -151,7 +153,9 @@ export function createComponentInstance(
     provides: parent ? parent.provides : appContext.provides
   };
 
+  // 初始化渲染上下文
   instance.ctx = { _: instance };
+  // 初始化根组件指针
   instance.root = parent ? parent.root : instance;
   instance.emit = emit.bind(null, instance);
 
@@ -166,7 +170,8 @@ export function setupComponent(instance: ComponentInstance) {
   const { vnode, type } = instance;
   const { props } = vnode;
   const isStateful = isStatefulComponent(instance);
-  initProps(instance, !!isStateful, props); // 初始化 props（本质是：初始化 instance.props、instance.attrs）
+  // 初始化 props（本质是：初始化 instance.props、instance.attrs）
+  initProps(instance, !!isStateful, props);
   // TODO: 初始化 slots
   // initSlots(instance, children)
 
@@ -177,6 +182,9 @@ export function setupComponent(instance: ComponentInstance) {
     // 创建渲染代理的属性访问缓存
     instance.accessCache = {};
     // 创建渲染上下文代理
+    // 执行组件渲染函数的时候，为了方便用户使用，会直接访问渲染上下文 instance.ctx 中的属性，
+    // 所以我们也要做一层 proxy，对渲染上下文 instance.ctx 属性的访问和修改，
+    // 代理到对 setupState、ctx、data、props 等数据的访问和修改
     instance.proxy = new Proxy(instance.ctx, PublicCtxProxyHandler);
 
     const { setup } = type;
@@ -187,7 +195,7 @@ export function setupComponent(instance: ComponentInstance) {
       setCurrentInstance(instance);
       // 准备执行  setup 函数，此时暂停依赖收集
       pauseTracking();
-      const setupResult = setup(instance, setupContext);
+      const setupResult = setup(instance.props, setupContext);
       resetTracking();
       unsetCurrentInstance();
 

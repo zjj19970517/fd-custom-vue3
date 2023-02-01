@@ -1,3 +1,6 @@
+/**
+ * ShapeFlags 表示虚拟节点的类型
+ */
 export const enum ShapeFlags {
   ELEMENT = 1, // HTML 或 SVG 标签 普通 DOM 元素   ==> 0b00000001 1
   FUNCTIONAL_COMPONENT = 1 << 1, // 函数组件      ==> 0b00000010 2

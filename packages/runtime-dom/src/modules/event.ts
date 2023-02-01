@@ -14,7 +14,6 @@ export function patchEvent(
   oldValue: EventValue,
   value: EventValue
 ) {
-  console.log('处理事件', key);
   const cache = el._evCache || (el._evCache = {}); // 元素节点 缓存一个绑定的事件列表
   const existingCache = cache[key]; // 是否存在缓存
   if (!!value && !!existingCache) {
@@ -28,7 +27,6 @@ export function patchEvent(
       const listener = (cache[key] = createEventInvoker(value));
       // 添加事件
       el.addEventListener(rawEventName, listener);
-      console.log('添加事件', rawEventName);
     } else {
       // 需要删除事件绑定
       el.removeEventListener(rawEventName, existingCache!);

@@ -12,11 +12,40 @@ function compileToFunction(template: any, options = {}) {
       hoistStatic: true
     })
   );
+  console.log('编译结果', code);
+  // code 的输出结果如下：
+  // const _Vue = Vue
+  // const { createElementVNode: _createElementVNode } = _Vue
 
-  // 调用 compile 得到的代码在给封装到函数内，
-  // 这里会依赖 runtimeDom 的一些函数，所以在这里通过参数的形式注入进去
+  // const _hoisted_1 = ["onClick"]
+
+  // return function render(_ctx, _cache) {
+  //   with (_ctx) {
+  //     const { createElementVNode: _createElementVNode, toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue
+
+  //     return (_openBlock(), _createElementBlock("div", null, [
+  //       _createElementVNode("p", { onClick: this.handleClick }, "静态节点1", 8 /* PROPS */, _hoisted_1),
+  //       _createElementVNode("p", null, "Name: " + _toDisplayString(this.name), 1 /* TEXT */)
+  //     ]))
+  //   }
+  // }
+
+  // runtimeDom 作为参数 Vue 的实参传入
+  // new Function('Vue', code) 构造一个函数
   const render = new Function('Vue', code)(runtimeDom);
 
+  console.log('render', render);
+  // render 的结果输出如下：
+  // function render(_ctx, _cache) {
+  //   with (_ctx) {
+  //     const { createElementVNode: _createElementVNode, toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue
+
+  //     return (_openBlock(), _createElementBlock("div", null, [
+  //       _createElementVNode("p", { onClick: this.handleClick }, "静态节点1", 8 /* PROPS */, _hoisted_1),
+  //       _createElementVNode("p", null, "Name: " + _toDisplayString(this.name), 1 /* TEXT */)
+  //     ]))
+  //   }
+  // }
   return render;
 }
 

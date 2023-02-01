@@ -46,6 +46,8 @@ let uid = 0;
 export function createAppAPI<HostElement>(
   render: any
 ): CreateAppFunction<HostElement> {
+  // 闭包函数
+  // render 参数将会保留下来，createApp 之后还会使用到
   /**
    * 实际使用到的 CreateApp 方法
    * @param hostComponent 根组件实例
@@ -53,8 +55,9 @@ export function createAppAPI<HostElement>(
    * @returns
    */
   return function createApp(hostComponent: any, rootProps = null): App {
+    // app 也有上下文对象
     const context = createAppContext();
-    const isMounted = false; // 是否已经 Mount 挂载完毕
+    let isMounted = false; // 是否已经 Mount 挂载完毕
     const installedPlugins = new Set(); // 安装成功的插件集合
     const app: App = (context.app = {
       _context: context,
@@ -70,8 +73,10 @@ export function createAppAPI<HostElement>(
         if (!isMounted) {
           const vnode = createVNode(hostComponent, rootProps);
           vnode.appContext = context;
+          // 渲染组件 vnode 到宿主容器中
           render(vnode, rootContainer);
           app._container = rootContainer;
+          isMounted = true;
         } else {
           console.warn('app has mounted');
         }
@@ -97,12 +102,13 @@ export function createAppAPI<HostElement>(
           console.warn(`Plugin has been installed`);
         } else if (plugin && isFunction(plugin.install)) {
           installedPlugins.add(plugin);
+          // 插件的第一个参数是 app，之后是配置选项
           plugin.install(app, ...options);
         } else if (isFunction(plugin)) {
           installedPlugins.add(plugin);
+          // 插件的第一个参数是 app，之后是配置选项
           plugin(app, ...options);
         }
-
         return app;
       },
       component(name: string, component: any): any {

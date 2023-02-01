@@ -11,6 +11,8 @@ export const genAppConfig = (): AppConfig => {
 };
 
 export const createAppConfigHandler = (context: AppContext) => {
+  // 限制对 app.config = xxx 的更改
+  // 只能更改 app.config.globalProperties.xxx = xxx
   const AppConfigHandler = {
     get config() {
       return context.config;

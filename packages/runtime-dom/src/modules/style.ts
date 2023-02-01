@@ -47,8 +47,10 @@ export function patchStyle(el: Element, oldValue: Style, value: Style) {
 function updateStyle(style: CSSStyleDeclaration, name: string, val: string) {
   if (val == null) val = '';
   if (importantStyle.test(val)) {
+    // !important 样式值
     style.setProperty(name, val.replace(importantStyle, ''), 'important');
   } else {
+    // 普通样式值
     style.setProperty(name, val);
   }
 }
